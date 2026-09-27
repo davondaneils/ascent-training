@@ -1,4 +1,5 @@
 import { Moon } from "lucide-react";
+import { serverNow } from "@/lib/clock";
 import { CardioCard } from "@/components/today/cardio-card";
 import { MobilityChecklist } from "@/components/today/mobility-checklist";
 import { WeekSummary } from "@/components/today/week-summary";
@@ -22,7 +23,7 @@ import {
 export default async function TodayPage() {
   const { user, supabase, program, enrollment } = await getAppContext();
   const { block } = program;
-  const today = resolveToday(block, enrollment!, new Date());
+  const today = resolveToday(block, enrollment!, await serverNow());
 
   const dateHeader = (
     <div className="flex flex-col gap-1 pt-2">

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { serverNow } from "@/lib/clock";
 import { nextMonday, toLocalDate } from "@/lib/dates";
 import { getAppContext } from "@/lib/data/context";
 import { StartForm } from "./start-form";
@@ -16,7 +17,7 @@ export default async function OnboardingPage() {
           Week 1 begins on this date. Twelve weeks, Monday to Sunday. You set this once.
         </p>
       </div>
-      <StartForm defaultDate={nextMonday(toLocalDate(new Date()))} />
+      <StartForm defaultDate={nextMonday(toLocalDate(await serverNow()))} />
     </main>
   );
 }

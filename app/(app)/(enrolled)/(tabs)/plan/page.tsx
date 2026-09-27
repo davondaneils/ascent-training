@@ -1,4 +1,5 @@
 import { ChevronRight } from "lucide-react";
+import { serverNow } from "@/lib/clock";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 import { WeekStrip } from "@/components/plan/week-strip";
@@ -10,7 +11,7 @@ import { getCardio, programPosition } from "@/lib/training/schedule";
 export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
   const { program, enrollment } = await getAppContext();
   const { block } = program;
-  const position = programPosition(block, enrollment!, toLocalDate(new Date()));
+  const position = programPosition(block, enrollment!, toLocalDate(await serverNow()));
   const currentWeek = position.status === "active" ? position.week : null;
 
   const requested = Number((await searchParams).week);

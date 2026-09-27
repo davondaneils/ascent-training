@@ -1,4 +1,5 @@
 import { ChevronLeft } from "lucide-react";
+import { serverNow } from "@/lib/clock";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { toLocalDate } from "@/lib/dates";
@@ -14,7 +15,7 @@ export default async function PlanDayPage({ params, searchParams }: PageProps<"/
   const dow = Number((await params).day);
   if (!Number.isInteger(dow) || dow < 1 || dow > 7) notFound();
 
-  const position = programPosition(block, enrollment!, toLocalDate(new Date()));
+  const position = programPosition(block, enrollment!, toLocalDate(await serverNow()));
   const requested = Number((await searchParams).week);
   const week =
     Number.isInteger(requested) && requested >= 1 && requested <= block.durationWeeks
