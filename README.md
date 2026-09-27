@@ -1,68 +1,97 @@
 # Ascent
 
-Ascent is a personal, phone-first training app built for one user.
+A personal, phone-first training app for one user: open it, see today's session, do one exercise at a time, log weight and reps, and let it handle rest timers and progression. It runs cardio with minimal logging and keeps history in the cloud.
 
-Its job is simple:
+The product spec lives in [`docs/`](docs) (start with `00-OVERVIEW.md`, then `01-PRD.md`). `docs/07-ACCEPTANCE.md` is the definition of done.
 
-> Open the app, see exactly what to do today, perform one exercise at a time, log only weight and reps, let the app handle rest timers and progression, complete cardio with minimal logging, and get out.
+**Stack:** Next.js 16 (App Router) · TypeScript · Tailwind 4 · shadcn/ui · Motion · Supabase (Auth + Postgres) · Vercel · PWA.
 
-V1 is intentionally narrow. It is not a general fitness platform, social app, nutrition tracker, or workout builder.
+---
 
-## Product principles
+## Local setup
 
-1. **No decisions during training.** The app already knows today's program.
-2. **One thing at a time.** Workout mode focuses on the current exercise and current set.
-3. **Minimum logging.** Lifting logs only weight and reps. Cardio logs modality, duration, and RPE.
-4. **Progression is automatic.** The user should not calculate what load to use next time.
-5. **Phone-first.** The active workout experience must be comfortable one-handed in a gym.
-6. **Calm visual design.** Light, premium, restrained, Apple/WHOOP-inspired.
-7. **Training logic is separate from UI.** The program is data-driven and can be replaced later without rewriting the app.
-8. **Cloud synced.** Workout history must persist across authenticated devices.
-
-## V1 stack
-
-- Next.js App Router
-- TypeScript
-- Tailwind CSS
-- shadcn/ui
-- Motion
-- Supabase Auth + Postgres
-- Vercel
-- GitHub
-- PWA support
-
-## Documentation
-
-Read these files in order:
-
-1. `docs/01-PRD.md`
-2. `docs/02-TRAINING.md`
-3. `docs/03-UX.md`
-4. `docs/04-DESIGN.md`
-5. `docs/05-DATA.md`
-6. `docs/06-BUILD.md`
-7. `docs/07-ACCEPTANCE.md`
-8. `CODEX-PROMPT.md`
-
-The docs are the source of truth. Do not expand scope beyond them.
-
-## Development
-
-Requires Node 24+.
+Requires **Node 24+**. There's no Docker or Supabase CLI: the app talks to a hosted Supabase project.
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
-npm run test       # unit tests (training domain)
-npm run typecheck
-npm run lint
-npm run build
+cp .env.example .env.local   # then fill it in (see below)
+npm run db:push              # create tables, RLS, and seed Phase 1
+npm run dev                  # http://localhost:3000
 ```
 
-Code layout:
+### 1. Supabase project
+1. Create a project at supabase.com and save the database password.
+2. **Project Settings → API Keys**: copy the Project URL, the anon/publishable key and the service_role/secret key into `.env.local`.
+3. **Connect → Session pooler**: copy the URI into `SUPABASE_DB_URL` and fill in your password. This is only used by `npm run db:push`.
+4. **Authentication → Users → Add user**: create your account (auto-confirm).
+5. **Authentication → Sign In / Providers**: turn **off** "Allow new users to sign up".
+6. **Authentication → URL Configuration**: set the Site URL to your app URL and add `<app-url>/**` to Redirect URLs (plus `http://localhost:3000/**` for development).
+7. *(Recommended)* Set up custom SMTP (e.g. Resend) so you can edit **Emails → Magic Link** to include `{{ .Token }}`. That gives you a 6-digit code, which is the reliable way to sign in inside the installed iPhone app, because magic links open in Safari instead.
 
-- `lib/training` — program definition, schedule, deload, session state machine, timers (pure)
-- `lib/progression` — next-load recommendations (pure)
-- `lib/dates` — civil-date helpers in America/Toronto
+### 2. Environment variables
 
-Database, auth, and deployment setup will be documented here as those slices land.
+| Variable | Where it's used |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | browser + server |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser + server (RLS-protected) |
+| `SUPABASE_SERVICE_ROLE_KEY` | E2E setup only. **Never** exposed to the browser or used by the app |
+| `ALLOWED_EMAIL` | the one address the login form will send codes to |
+| `NEXT_PUBLIC_APP_URL` | magic-link redirect base (`http://localhost:3000` or your Vercel URL) |
+| `SUPABASE_DB_URL` | `npm run db:push` only |
+| `E2E_EMAIL` | E2E only: a separate test account, never your real one |
+
+### 3. First run
+Sign in, pick the Phase 1 start date (it defaults to next Monday), and you're in. The start date is set once.
+
+---
+
+## Deploying to Vercel
+
+1. Push the repo to GitHub.
+2. In Vercel, **Add New → Project** and import the repo. The framework preset is Next.js; keep the defaults.
+3. Under **Environment Variables**, add `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `ALLOWED_EMAIL`, and `NEXT_PUBLIC_APP_URL` (your production URL, e.g. `https://ascent-xyz.vercel.app`). Vercel doesn't need the service-role key or `SUPABASE_DB_URL`.
+4. Deploy.
+5. In Supabase **Authentication → URL Configuration**, set the Site URL to the production URL and add `https://<your-domain>/**` to Redirect URLs.
+6. On your phone, open the URL in Safari, tap **Share → Add to Home Screen**, and launch Ascent from the icon.
+
+Schema changes: add a new SQL file under `supabase/migrations/` and run `npm run db:push` (it only applies files it hasn't applied yet, then re-runs the idempotent seed).
+
+---
+
+## Scripts
+
+```bash
+npm run dev               # dev server
+npm run build             # production build
+npm run test              # unit tests (Vitest): training domain, progression, timers, offline sync
+npm run test:e2e          # critical flows (Playwright) against Supabase as E2E_EMAIL
+npm run typecheck
+npm run lint
+npm run db:push           # apply migrations + seed
+npm run db:seed:generate  # regenerate supabase/seed/phase-1.sql from the program definition
+npm run media:fetch       # rebuild exercise illustrations (already committed)
+```
+
+E2E prerequisites: `npx playwright install chromium`, `E2E_EMAIL` set to a pre-created test user, and the dev server (started automatically). The tests reset and clean up only that account's data.
+
+### Dev-only tools (disabled in production)
+- `/dev/gallery`: every key screen rendered from fixtures, plus all exercise illustrations. No login needed in dev.
+- `/dev/time?at=2026-09-28T09:00:00-04:00`: pretend it's another day, to exercise any program day; `/dev/time?clear=1` resets. A banner shows while it's active.
+
+---
+
+## How the code is organised
+
+Training logic is kept separate from persistence and UI:
+
+- `lib/training/`: the Phase 1 program definition, schedule (week/day in America/Toronto), deload rules, workout-session state machine, cardio state machine, timers, metrics. All pure.
+- `lib/progression/`: next-load recommendations (double progression, assistance reduction, bodyweight). Pure.
+- `lib/data/`: Supabase queries mapped to domain types.
+- `lib/offline/`: local workout snapshot, durable write outbox (idempotent upserts keyed by client ids), merge-on-reload.
+- `app/`, `components/`: screens.
+
+The program is data. `lib/training/programs/phase-1.ts` generates `supabase/seed/phase-1.sql`, and the app reads the seeded tables. A later phase means new seed data, not new screens.
+
+## Credits
+
+Exercise illustrations by [Everkinetic](https://github.com/everkinetic/data), licensed [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) (modified: recoloured and combined into loops). See `public/exercise-media/ATTRIBUTION.md`.
