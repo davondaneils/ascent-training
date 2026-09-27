@@ -1,11 +1,26 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export type LoginState =
   | { step: "email"; error?: string }
   | { step: "code"; email: string; error?: string };
+
+/**
+ * The origin the user is actually on (localhost in dev, the Vercel domain in prod), so the magic
+ * link always returns to the same site. NEXT_PUBLIC_APP_URL is only a fallback.
+ */
+async function requestOrigin(): Promise<string> {
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  if (host) {
+    const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") || host.startsWith("127.") ? "http" : "https");
+    return `${proto}://${host}`;
+  }
+  return process.env.NEXT_PUBLIC_APP_URL ?? "";
+}
 
 function isAllowed(email: string): boolean {
   const allowed = process.env.ALLOWED_EMAIL?.trim().toLowerCase();
@@ -23,10 +38,7 @@ export async function sendCode(_prev: LoginState, form: FormData): Promise<Login
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: {
-      shouldCreateUser: false,
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/auth/confirm`,
-    },
+    options: { shouldCreateUser: false, emailRedirectTo: `${await requestOrigin()}/auth/confirm` },
   });
   if (error && error.status === 429) {
     return { step: "email", error: "Too many attempts. Wait a minute and try again." };

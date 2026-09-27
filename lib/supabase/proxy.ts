@@ -12,6 +12,15 @@ function isPublic(pathname: string): boolean {
 
 /** Refreshes the Supabase session on every request and gates app routes behind sign-in. */
 export async function updateSession(request: NextRequest): Promise<NextResponse> {
+  // A sign-in link that landed somewhere other than /auth/confirm (e.g. Supabase fell back to the
+  // Site URL root): forward its code/token there instead of silently dropping it.
+  const { searchParams: sp, pathname: path } = request.nextUrl;
+  if (path !== "/auth/confirm" && (sp.has("code") || (sp.has("token_hash") && sp.has("type")))) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/confirm";
+    return NextResponse.redirect(url);
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(supabaseUrl(), supabaseAnonKey(), {
