@@ -33,15 +33,25 @@ export async function sendCode(_prev: LoginState, form: FormData): Promise<Login
   if (!email.includes("@")) return { step: "email", error: "Enter your email." };
 
   // Same response whether or not the address is allowed; nothing is sent for others.
-  if (!isAllowed(email)) return { step: "code", email };
+  if (!isAllowed(email)) {
+    console.warn("Sign-in requested for an address that isn't ALLOWED_EMAIL; no email sent.");
+    return { step: "code", email };
+  }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: { shouldCreateUser: false, emailRedirectTo: `${await requestOrigin()}/auth/confirm` },
   });
-  if (error && error.status === 429) {
-    return { step: "email", error: "Too many sign-in emails for now. Supabase limits how many it sends per hour. Try again later." };
+  if (error) {
+    console.error("signInWithOtp failed", error.status, error.message);
+    if (error.status === 429) {
+      return { step: "email", error: "Too many sign-in emails for now. Supabase limits how many it sends per hour. Try again later." };
+    }
+    return {
+      step: "email",
+      error: `Couldn't send the sign-in email (${error.message}). Check the SMTP settings in Supabase, then try again.`,
+    };
   }
   return { step: "code", email };
 }
