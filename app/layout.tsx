@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ServiceWorkerRegister } from "@/components/pwa/service-worker";
 import { Toaster } from "@/components/ui/sonner";
+import { BRAND } from "@/lib/brand";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,8 +16,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ascent",
+  title: BRAND.name,
   description: "Personal training.",
+  applicationName: BRAND.name,
+  appleWebApp: { capable: true, title: BRAND.name, statusBarStyle: "default" },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
@@ -23,6 +28,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   colorScheme: "light",
+  themeColor: BRAND.background,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -34,6 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-background text-text-primary">
         {children}
         <Toaster position="top-center" />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

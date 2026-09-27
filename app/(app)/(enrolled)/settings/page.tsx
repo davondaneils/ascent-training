@@ -1,9 +1,9 @@
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { getAppContext } from "@/lib/data/context";
 import packageJson from "@/package.json";
 import { signOut } from "./actions";
+import { SignOutButton } from "./sign-out-button";
 
 export default async function SettingsPage() {
   const { user } = await getAppContext();
@@ -36,7 +36,7 @@ export default async function SettingsPage() {
         (<a href="/exercise-media/ATTRIBUTION.md" className="underline underline-offset-2">details</a>).
       </p>
       <form action={signOut} className="pt-8">
-        <Button type="submit" variant="destructive" size="touch" className="w-full">Sign out</Button>
+        <SignOutButton />
       </form>
     </main>
   );
