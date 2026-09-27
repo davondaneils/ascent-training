@@ -24,10 +24,10 @@ export function RepsControl({ value, onChange, repMin, repMax, perSide }: Props)
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between">
-        <span id="reps-label" className="text-meta text-text-tertiary">
+        <span id="reps-label" className="type-meta text-text-tertiary">
           Reps{perSide ? " per side" : ""}
         </span>
-        <label className="flex items-center gap-2 text-meta text-text-tertiary">
+        <label className="flex items-center gap-2 type-meta text-text-tertiary">
           Other
           <input
             aria-label="Reps, manual entry"

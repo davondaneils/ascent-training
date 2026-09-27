@@ -119,43 +119,43 @@
   }
 }
 /* Type scale (docs/04-DESIGN.md): numbers large and calm, hierarchy from type before borders. */
-@utility text-timer {
+@utility type-timer {
   font-size: 88px;
   line-height: 1;
   font-weight: 600;
   letter-spacing: -0.035em;
   font-variant-numeric: tabular-nums;
 }
-@utility text-display {
+@utility type-display {
   font-size: 52px;
   line-height: 1;
   font-weight: 600;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
-@utility text-title {
+@utility type-title {
   font-size: 32px;
   line-height: 1.1;
   font-weight: 600;
   letter-spacing: -0.022em;
 }
-@utility text-heading {
+@utility type-heading {
   font-size: 24px;
   line-height: 1.2;
   font-weight: 600;
   letter-spacing: -0.015em;
 }
-@utility text-subheading {
+@utility type-subheading {
   font-size: 18px;
   line-height: 1.3;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
-@utility text-body {
+@utility type-body {
   font-size: 16px;
   line-height: 1.45;
 }
-@utility text-meta {
+@utility type-meta {
   font-size: 13px;
   line-height: 1.35;
   font-weight: 500;

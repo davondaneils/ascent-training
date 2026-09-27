@@ -46,7 +46,7 @@ export function OverviewDrawer({ rows, names, infos, onJump, onFinish, onDiscard
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="text-left">
-          <DrawerTitle className="text-heading">Workout</DrawerTitle>
+          <DrawerTitle className="type-heading">Workout</DrawerTitle>
           <DrawerDescription>Tap an exercise to go to it. Logged sets are kept.</DrawerDescription>
         </DrawerHeader>
         <ul className="flex max-h-[60vh] flex-col overflow-y-auto px-2">

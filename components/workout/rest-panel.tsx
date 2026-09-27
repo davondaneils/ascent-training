@@ -2,6 +2,7 @@
 
 import { Check } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
+import { ProgressRing } from "@/components/shared/progress-ring";
 import { Button } from "@/components/ui/button";
 import { formatClock } from "@/lib/training/rest-timer";
 
@@ -31,12 +32,12 @@ export function RestPanel({ remainingMs, progress, completedSummary, nextTarget,
         {completedSummary}
       </button>
 
-      <RestRing progress={progress}>
-        <p className="text-meta tracking-wide text-text-tertiary">REST</p>
-        <p className="text-timer" role="timer" aria-live="off">
+      <ProgressRing progress={progress}>
+        <p className="type-meta tracking-wide text-text-tertiary">REST</p>
+        <p className="type-timer" role="timer" aria-live="off">
           {formatClock(remainingMs)}
         </p>
-      </RestRing>
+      </ProgressRing>
 
       <div className="flex w-full gap-3">
         <Button type="button" variant="secondary" size="touch" className="h-14 flex-1 rounded-2xl text-base" onClick={onExtend}>
@@ -48,37 +49,10 @@ export function RestPanel({ remainingMs, progress, completedSummary, nextTarget,
       </div>
 
       <div className="flex flex-col items-center gap-1">
-        <p className="text-meta text-text-tertiary">Next set</p>
-        <p className="text-subheading font-medium tabular-nums">{nextTarget}</p>
+        <p className="type-meta text-text-tertiary">Next set</p>
+        <p className="type-subheading font-medium tabular-nums">{nextTarget}</p>
       </div>
     </div>
   );
 }
 
-const R = 118;
-const STROKE = 6;
-
-/** Accent ring that fills as rest elapses. Driven by the timestamp-derived progress, never a counter. */
-function RestRing({ progress, children }: { progress: number; children: React.ReactNode }) {
-  const size = (R + STROKE) * 2;
-  return (
-    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0 -rotate-90" aria-hidden>
-        <circle cx={size / 2} cy={size / 2} r={R} fill="none" stroke="var(--surface-subtle)" strokeWidth={STROKE} />
-        <motion.circle
-          cx={size / 2}
-          cy={size / 2}
-          r={R}
-          fill="none"
-          stroke="var(--accent)"
-          strokeWidth={STROKE}
-          strokeLinecap="round"
-          initial={false}
-          animate={{ pathLength: Math.max(0.001, progress) }}
-          transition={{ duration: 0.25, ease: "linear" }}
-        />
-      </svg>
-      <div className="flex flex-col items-center gap-1">{children}</div>
-    </div>
-  );
-}

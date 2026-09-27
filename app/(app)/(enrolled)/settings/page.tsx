@@ -14,7 +14,7 @@ export default async function SettingsPage() {
           <ChevronLeft className="size-6" aria-hidden />
         </Link>
       </header>
-      <h1 className="pb-6 text-title">Settings</h1>
+      <h1 className="pb-6 type-title">Settings</h1>
       <dl className="flex flex-col divide-y divide-border-subtle border-y border-border-subtle text-[15px]">
         <div className="flex items-center justify-between py-4">
           <dt className="text-text-secondary">Email</dt>
@@ -29,7 +29,7 @@ export default async function SettingsPage() {
           <dd className="text-text-primary tabular-nums">{packageJson.version}</dd>
         </div>
       </dl>
-      <p className="pt-6 text-meta font-normal text-text-tertiary">
+      <p className="pt-6 type-meta font-normal text-text-tertiary">
         Exercise illustrations ©{" "}
         <a href="https://github.com/everkinetic/data" className="underline underline-offset-2">Everkinetic</a>, licensed{" "}
         <a href="https://creativecommons.org/licenses/by-sa/4.0/" className="underline underline-offset-2">CC BY-SA 4.0</a>{" "}

@@ -65,7 +65,7 @@ export function MobilityChecklist({ title, date, userId, items, initiallyDone }:
       <div className="flex items-baseline justify-between px-3 pb-1">
         <div className="flex flex-col gap-1">
           <Eyebrow>Mobility</Eyebrow>
-          <h2 className="text-subheading">{title}</h2>
+          <h2 className="type-subheading">{title}</h2>
         </div>
         <p className="text-[13px] tabular-nums text-text-tertiary">
           {done.size} / {items.length}

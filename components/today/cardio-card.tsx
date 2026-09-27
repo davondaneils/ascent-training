@@ -23,10 +23,10 @@ export function CardioCard({ cardio, date, primary, logs }: Props) {
     <Card className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <Eyebrow>{primary ? "Long easy aerobic" : "Later today"}</Eyebrow>
-        <h2 className={primary ? "text-heading" : "text-subheading"}>
+        <h2 className={primary ? "type-heading" : "type-subheading"}>
           {MODALITY[cardio.modality]} · {target}
         </h2>
-        <p className="text-body text-text-secondary">
+        <p className="type-body text-text-secondary">
           Easy · RPE {cardio.targetRpeMin}–{cardio.targetRpeMax}
         </p>
       </div>

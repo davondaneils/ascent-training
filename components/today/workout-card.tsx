@@ -30,8 +30,8 @@ export function WorkoutCard({ name, durationMinutes, isDeload, exercises, workou
     <Card className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
         <Eyebrow>{isDeload ? "Lifting · Deload week" : "Lifting"}</Eyebrow>
-        <h2 className="text-heading">{name}</h2>
-        <p className="text-body tabular-nums text-text-secondary">
+        <h2 className="type-heading">{name}</h2>
+        <p className="type-body tabular-nums text-text-secondary">
           {exercises.length} exercises · ~{durationMinutes} min
         </p>
       </div>
@@ -44,12 +44,12 @@ export function WorkoutCard({ name, durationMinutes, isDeload, exercises, workou
             <span className="text-[15px] tabular-nums text-text-tertiary">{p.detail}</span>
           </li>
         ))}
-        {rest > 0 && <li className="pl-14 text-meta text-text-tertiary">+{rest} more</li>}
+        {rest > 0 && <li className="pl-14 type-meta text-text-tertiary">+{rest} more</li>}
       </ul>
 
       {status === "completed" ? (
         <div className="flex items-center justify-between border-t border-border-subtle pt-4">
-          <p className="flex items-center gap-2 text-body font-medium text-success">
+          <p className="flex items-center gap-2 type-body font-medium text-success">
             <Check className="size-5" aria-hidden /> Workout complete
           </p>
           <Button asChild variant="ghost" size="touch">

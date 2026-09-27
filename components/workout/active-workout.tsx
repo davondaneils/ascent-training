@@ -149,8 +149,8 @@ export function ActiveWorkout({ initialSession, infos, meta, userId, exerciseIdB
             {showPrep ? (
               <div className="flex flex-1 flex-col gap-5 pb-32 pt-2">
                 <div className="flex flex-col gap-1">
-                  <p className="text-meta text-text-tertiary">Before you start</p>
-                  <h1 className="text-title">Warm-up</h1>
+                  <p className="type-meta text-text-tertiary">Before you start</p>
+                  <h1 className="type-title">Warm-up</h1>
                 </div>
                 <MobilityChecklist title={meta.dayName} date={date} userId={userId} items={prep} initiallyDone={prepDone} />
                 <BottomBar>
@@ -234,10 +234,10 @@ function SetEntry({ exercise, info, setNumber, onEdit, onComplete }: SetEntryPro
   return (
     <div className="flex flex-1 flex-col gap-5 pb-32 pt-1">
       <div className="flex flex-col gap-3">
-        <h1 className="text-heading">{info.name}</h1>
+        <h1 className="type-heading">{info.name}</h1>
         <ExerciseMedia info={info} />
         <div className="flex items-baseline justify-between gap-3">
-          <p className="text-subheading tabular-nums">{info.prescriptionText}</p>
+          <p className="type-subheading tabular-nums">{info.prescriptionText}</p>
           <p className="text-[15px] tabular-nums text-text-secondary">
             {info.restSeconds !== null ? `Rest ${formatRest(info.restSeconds)}` : "Rest as needed"}
           </p>
@@ -245,7 +245,7 @@ function SetEntry({ exercise, info, setNumber, onEdit, onComplete }: SetEntryPro
         <div className="flex flex-col gap-0.5 rounded-[14px] bg-surface-subtle px-3.5 py-2.5">
           {info.previous && info.previous.length > 0 ? (
             <p className="flex items-baseline gap-2 text-[15px]">
-              <span className="text-meta text-text-tertiary">Previous</span>
+              <span className="type-meta text-text-tertiary">Previous</span>
               <span className="tabular-nums text-text-primary">
                 {timed ? `${info.previous.length} holds` : info.previous.map((s) => formatSet(s, info.loadType).replace(" × ", "×")).join(" · ")}
               </span>
@@ -254,7 +254,7 @@ function SetEntry({ exercise, info, setNumber, onEdit, onComplete }: SetEntryPro
             <p className="text-[15px] text-text-secondary">First session</p>
           )}
           {info.recommendation.reason && info.recommendation.kind !== "first_session" && (
-            <p className="text-meta font-normal text-text-secondary">{info.recommendation.reason}</p>
+            <p className="type-meta font-normal text-text-secondary">{info.recommendation.reason}</p>
           )}
         </div>
       </div>
@@ -262,7 +262,7 @@ function SetEntry({ exercise, info, setNumber, onEdit, onComplete }: SetEntryPro
       <div className="flex flex-col gap-5 pt-1">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <p className="text-subheading tabular-nums">
+            <p className="type-subheading tabular-nums">
               Set {setNumber} <span className="text-text-tertiary">of {exercise.targetSets}</span>
             </p>
             <SetDots done={exercise.sets.length} total={exercise.targetSets} />

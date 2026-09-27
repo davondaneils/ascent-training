@@ -26,7 +26,9 @@ export function supabaseExecutor(supabase: SupabaseClient): Executor {
     const res =
       op.kind === "upsert_set"
         ? await supabase.from("workout_sets").upsert(op.row, { onConflict: "id" })
-        : op.kind === "update_exercise"
+        : op.kind === "upsert_cardio"
+          ? await supabase.from("cardio_logs").upsert(op.row, { onConflict: "id" })
+          : op.kind === "update_exercise"
           ? await supabase.from("workout_exercises").update(op.patch).eq("id", op.id)
           : await supabase.from("workouts").update(op.patch).eq("id", op.id);
     const result = classify(res.error, res.status);

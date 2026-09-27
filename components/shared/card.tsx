@@ -11,5 +11,5 @@ export function Card({ className, ...props }: React.ComponentProps<"section">) {
 }
 
 export function Eyebrow({ className, ...props }: React.ComponentProps<"p">) {
-  return <p className={cn("text-meta text-text-tertiary", className)} {...props} />;
+  return <p className={cn("type-meta text-text-tertiary", className)} {...props} />;
 }

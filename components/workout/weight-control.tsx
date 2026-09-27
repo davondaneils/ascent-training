@@ -20,7 +20,7 @@ export function WeightControl({ value, onChange, step, loadType }: Props) {
   };
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor="weight" className="text-meta text-text-tertiary">
+      <label htmlFor="weight" className="type-meta text-text-tertiary">
         {weightLabel(loadType)}
       </label>
       <div className="flex items-center gap-3">
@@ -42,7 +42,7 @@ export function WeightControl({ value, onChange, step, loadType }: Props) {
               if (Number.isFinite(n)) onChange(n);
             }}
             onFocus={(e) => e.currentTarget.select()}
-            className="w-32 bg-transparent text-center text-display text-text-primary outline-none placeholder:text-text-tertiary"
+            className="w-32 bg-transparent text-center type-display text-text-primary outline-none placeholder:text-text-tertiary"
           />
           <span className="text-lg text-text-secondary">lb</span>
         </div>

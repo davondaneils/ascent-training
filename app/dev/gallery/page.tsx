@@ -6,6 +6,7 @@ import { TodayView, type TodayData } from "@/components/today/today-view";
 import { ActiveWorkout } from "@/components/workout/active-workout";
 import { buildExerciseInfos, buildWorkoutMeta } from "@/components/workout/build-infos";
 import { MediaFrame } from "@/components/workout/exercise-media";
+import { CardioSessionView } from "@/components/cardio/cardio-session";
 import { WorkoutSummary } from "@/components/workout/workout-summary";
 import { MEDIA_MAP } from "@/lib/training/programs/media-map";
 import { PHASE_1 } from "@/lib/training/programs/phase-1";
@@ -28,6 +29,8 @@ const VIEWS = [
   "workout-rest",
   "workout-complete",
   "workout-summary",
+  "cardio-weekday",
+  "cardio-saturday",
   "media",
 ] as const;
 type View = (typeof VIEWS)[number];
@@ -117,12 +120,12 @@ export default async function Gallery({ searchParams }: PageProps<"/dev/gallery"
   if (!view || !VIEWS.includes(view)) {
     return (
       <main className="mx-auto flex w-full max-w-md flex-col gap-4 p-5">
-        <h1 className="text-title">Gallery</h1>
-        <p className="text-body text-text-secondary">Dev-only fixtures for visual QA.</p>
+        <h1 className="type-title">Gallery</h1>
+        <p className="type-body text-text-secondary">Dev-only fixtures for visual QA.</p>
         <ul className="flex flex-col divide-y divide-border-subtle rounded-[20px] border border-border-subtle bg-surface">
           {VIEWS.map((v) => (
             <li key={v}>
-              <Link href={`/dev/gallery?view=${v}`} className="block px-4 py-3 text-body">
+              <Link href={`/dev/gallery?view=${v}`} className="block px-4 py-3 type-body">
                 {v}
               </Link>
             </li>
@@ -155,6 +158,25 @@ export default async function Gallery({ searchParams }: PageProps<"/dev/gallery"
         </main>
         <BottomNav />
       </>
+    );
+  }
+
+  if (view.startsWith("cardio-")) {
+    const sat = view === "cardio-saturday";
+    const resolved = resolveDay(block, 3, sat ? "2026-10-24" : "2026-10-19");
+    return (
+      <CardioSessionView
+        key={view}
+        logId={`gallery-${view}`}
+        date={`gallery-${view}`}
+        weekNumber={3}
+        blockId="gallery"
+        userId={USER}
+        prescription={resolved.cardio!}
+        allowModalityChoice={sat}
+        isDeload={false}
+        persist={false}
+      />
     );
   }
 

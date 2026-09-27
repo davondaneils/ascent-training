@@ -60,13 +60,13 @@ export function ExerciseMedia({ info }: { info: ExerciseInfo }) {
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="text-left">
-          <DrawerTitle className="text-heading">{info.name}</DrawerTitle>
+          <DrawerTitle className="type-heading">{info.name}</DrawerTitle>
           <DrawerDescription className="sr-only">Movement demonstration and cues</DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-4 px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
           <MediaFrame media={info} className="aspect-square w-full" />
           {cues.length > 0 && (
-            <ul className="flex flex-col gap-2 text-body text-text-secondary">
+            <ul className="flex flex-col gap-2 type-body text-text-secondary">
               {cues.map((c) => (
                 <li key={c}>{c}</li>
               ))}

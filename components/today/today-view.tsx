@@ -25,8 +25,8 @@ export interface TodayData {
 export function TodayView({ block, exerciseIds, userId, today, workout, cardioLogs, mobilityDone, completion, scheduled }: TodayData) {
   const header = (
     <div className="flex flex-col gap-1 pt-2">
-      <h1 className="text-title">{weekdayName(today.date)}</h1>
-      <p className="text-body text-text-secondary">
+      <h1 className="type-title">{weekdayName(today.date)}</h1>
+      <p className="type-body text-text-secondary">
         {monthDay(today.date)}
         {today.status === "active" && (
           <>
@@ -43,11 +43,11 @@ export function TodayView({ block, exerciseIds, userId, today, workout, cardioLo
       <div className="flex flex-col gap-10">
         {header}
         <section className="flex flex-col gap-2">
-          <p className="text-meta text-text-tertiary">{block.name}</p>
-          <h2 className="text-heading">
+          <p className="type-meta text-text-tertiary">{block.name}</p>
+          <h2 className="type-heading">
             Starts {weekdayName(today.startDate)}, {monthDay(today.startDate)}
           </h2>
-          <p className="text-body text-text-secondary">
+          <p className="type-body text-text-secondary">
             {today.daysUntilStart === 1 ? "Tomorrow." : `In ${today.daysUntilStart} days.`} Week 1 begins then.
           </p>
         </section>
@@ -64,7 +64,7 @@ export function TodayView({ block, exerciseIds, userId, today, workout, cardioLo
         {header}
         <section className="flex flex-col items-start gap-3 pt-12">
           <Moon className="size-7 text-text-tertiary" strokeWidth={1.5} aria-hidden />
-          <h2 className="text-title">Rest · Fast</h2>
+          <h2 className="type-title">Rest · Fast</h2>
           <p className="text-[17px] leading-relaxed text-text-secondary">
             No training today.
             <br />

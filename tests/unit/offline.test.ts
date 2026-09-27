@@ -51,11 +51,24 @@ describe("outbox", () => {
     expect(q[1]).toMatchObject({ patch: { actual_order: 1, status: "completed" } });
   });
 
+  it("cardio logs coalesce by id too", () => {
+    const cardio = (rpe: number): OutboxOp => ({
+      kind: "upsert_cardio",
+      row: {
+        id: "c1", user_id: "u", program_block_id: "b", week_number: 1, scheduled_date: "2026-10-19",
+        modality: "bike", target_minutes: 20, actual_minutes: 20, rpe, completed_at: "2026-10-19T22:00:00Z",
+      },
+    });
+    const q = coalesce(coalesce([], cardio(3)), cardio(4));
+    expect(q).toHaveLength(1);
+    expect(q[0]).toMatchObject({ row: { rpe: 4 } });
+  });
+
   it("sends in order and empties storage when done", async () => {
     const storage = new MemoryStorage();
     const sent: string[] = [];
     const box = new Outbox(storage, "k", async (op) => {
-      sent.push(op.kind === "upsert_set" ? op.row.id : op.id);
+      sent.push("row" in op ? op.row.id : op.id);
       return "ok";
     });
     box.enqueue(setOp("a"));
@@ -103,7 +116,7 @@ describe("outbox", () => {
   it("drops permanently failing ops and continues", async () => {
     const sent: string[] = [];
     const box = new Outbox(new MemoryStorage(), "k", async (op) => {
-      const id = op.kind === "upsert_set" ? op.row.id : op.id;
+      const id = "row" in op ? op.row.id : op.id;
       sent.push(id);
       return id === "bad" ? "drop" : "ok";
     });

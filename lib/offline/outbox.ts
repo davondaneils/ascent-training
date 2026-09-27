@@ -13,6 +13,19 @@ export interface SetRow {
   completed_at: string;
 }
 
+export interface CardioRow {
+  id: string;
+  user_id: string;
+  program_block_id: string;
+  week_number: number;
+  scheduled_date: string;
+  modality: "bike" | "incline_walk";
+  target_minutes: number;
+  actual_minutes: number;
+  rpe: number;
+  completed_at: string;
+}
+
 export interface ExercisePatch {
   actual_order?: number | null;
   status?: "pending" | "in_progress" | "completed";
@@ -26,6 +39,7 @@ export interface WorkoutPatch {
 
 export type OutboxOp =
   | { kind: "upsert_set"; row: SetRow }
+  | { kind: "upsert_cardio"; row: CardioRow }
   | { kind: "update_exercise"; id: string; patch: ExercisePatch }
   | { kind: "update_workout"; id: string; patch: WorkoutPatch };
 
@@ -47,7 +61,9 @@ export interface KeyValueStorage {
 }
 
 function targetKey(op: OutboxOp): string {
-  return op.kind === "upsert_set" ? `set:${op.row.id}` : `${op.kind}:${op.id}`;
+  if (op.kind === "upsert_set") return `set:${op.row.id}`;
+  if (op.kind === "upsert_cardio") return `cardio:${op.row.id}`;
+  return `${op.kind}:${op.id}`;
 }
 
 /** Later writes to the same target replace (sets) or merge into (patches) earlier queued ones. */
@@ -57,7 +73,7 @@ export function coalesce(queue: OutboxOp[], op: OutboxOp): OutboxOp[] {
   if (i === -1) return [...queue, op];
   const prev = queue[i];
   const merged: OutboxOp =
-    op.kind === "upsert_set" || prev.kind === "upsert_set"
+    op.kind === "upsert_set" || op.kind === "upsert_cardio" || prev.kind === "upsert_set" || prev.kind === "upsert_cardio"
       ? op
       : ({ ...op, patch: { ...prev.patch, ...op.patch } } as OutboxOp);
   return [...queue.slice(0, i), merged, ...queue.slice(i + 1)];
