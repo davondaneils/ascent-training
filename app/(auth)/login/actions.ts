@@ -41,7 +41,7 @@ export async function sendCode(_prev: LoginState, form: FormData): Promise<Login
     options: { shouldCreateUser: false, emailRedirectTo: `${await requestOrigin()}/auth/confirm` },
   });
   if (error && error.status === 429) {
-    return { step: "email", error: "Too many attempts. Wait a minute and try again." };
+    return { step: "email", error: "Too many sign-in emails for now. Supabase limits how many it sends per hour. Try again later." };
   }
   return { step: "code", email };
 }
