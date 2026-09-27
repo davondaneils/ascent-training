@@ -5,6 +5,8 @@ import { motion, useReducedMotion } from "motion/react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Card, Eyebrow } from "@/components/shared/card";
+import { useNow } from "@/hooks/use-now";
+import { formatClock, remainingMs, startRest, type RestTimer } from "@/lib/training/rest-timer";
 import { getBrowserClient } from "@/lib/supabase/browser";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +15,8 @@ export interface ChecklistItem {
   name: string;
   detail: string;
   notes: string | null;
+  /** Timed holds offer an optional small countdown. */
+  holdSeconds?: number | null;
 }
 
 interface Props {
@@ -75,13 +79,13 @@ export function MobilityChecklist({ title, date, userId, items, initiallyDone }:
         {items.map((item) => {
           const checked = done.has(item.exerciseId);
           return (
-            <li key={item.exerciseId}>
+            <li key={item.exerciseId} className="flex items-center gap-2">
               <button
                 type="button"
                 role="checkbox"
                 aria-checked={checked}
                 onClick={() => toggle(item.exerciseId)}
-                className="flex min-h-14 w-full items-center gap-3 rounded-[14px] px-3 py-2 text-left transition-colors active:bg-surface-subtle"
+                className="flex min-h-14 flex-1 items-center gap-3 rounded-[14px] px-3 py-2 text-left transition-colors active:bg-surface-subtle"
               >
                 <span
                   className={cn(
@@ -107,10 +111,33 @@ export function MobilityChecklist({ title, date, userId, items, initiallyDone }:
                   <span className="text-[13px] text-text-tertiary">{item.detail}</span>
                 </span>
               </button>
+              {item.holdSeconds ? <InlineHold seconds={item.holdSeconds} label={item.name} /> : null}
             </li>
           );
         })}
       </ul>
     </Card>
+  );
+}
+
+/** Optional countdown for a timed hold: "30 s" → 0:24 → done. Tap again to restart. Timestamp-based. */
+function InlineHold({ seconds, label }: { seconds: number; label: string }) {
+  const [timer, setTimer] = useState<RestTimer | null>(null);
+  const now = useNow(250, timer !== null) ?? timer?.startedAt ?? 0;
+  const left = timer ? remainingMs(timer, now) : 0;
+  const running = timer !== null && left > 0;
+  const done = timer !== null && left === 0;
+  return (
+    <button
+      type="button"
+      onClick={() => setTimer(startRest(Date.now(), seconds))}
+      aria-label={running ? `Restart ${label} timer` : `Start ${seconds} second timer for ${label}`}
+      className={cn(
+        "mr-1 flex h-11 min-w-16 shrink-0 items-center justify-center rounded-full border px-3 text-[14px] font-medium tabular-nums transition-colors",
+        running ? "border-accent bg-accent-soft text-accent" : done ? "border-success/40 text-success" : "border-border-subtle bg-surface text-text-secondary",
+      )}
+    >
+      {running ? formatClock(left) : done ? "Done" : `${seconds} s`}
+    </button>
   );
 }

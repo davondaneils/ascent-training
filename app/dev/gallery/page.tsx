@@ -7,6 +7,9 @@ import { ActiveWorkout } from "@/components/workout/active-workout";
 import { buildExerciseInfos, buildWorkoutMeta } from "@/components/workout/build-infos";
 import { MediaFrame } from "@/components/workout/exercise-media";
 import { CardioSessionView } from "@/components/cardio/cardio-session";
+import { ProgressView } from "@/components/progress/progress-view";
+import { addDays } from "@/lib/dates";
+import type { ProgressData } from "@/lib/data/progress";
 import { WorkoutSummary } from "@/components/workout/workout-summary";
 import { MEDIA_MAP } from "@/lib/training/programs/media-map";
 import { PHASE_1 } from "@/lib/training/programs/phase-1";
@@ -31,6 +34,8 @@ const VIEWS = [
   "workout-summary",
   "cardio-weekday",
   "cardio-saturday",
+  "progress-empty",
+  "progress-data",
   "media",
 ] as const;
 type View = (typeof VIEWS)[number];
@@ -112,6 +117,37 @@ function requestTime(): number {
   return Date.now();
 }
 
+/** Eight weeks of plausible history starting Mon 2026-09-28. */
+function progressFixture(): ProgressData {
+  const start = "2026-09-28";
+  const lifts: ExercisePerformance[] = [];
+  const cardio: ProgressData["cardio"] = [];
+  const completed: string[] = [];
+  for (let w = 0; w < 8; w++) {
+    const deload = w === 3 || w === 7;
+    const mon = addDays(start, w * 7);
+    const fri = addDays(mon, 4);
+    const bench = 185 + Math.floor(w / 2) * 5;
+    lifts.push({
+      workoutId: `m${w}`, date: mon, weekNumber: w + 1, isDeload: deload, prescriptionKey: "mon-bench-press", exerciseSlug: "bench-press",
+      sets: (deload ? [6, 6] : [6, 6, 5 + (w % 2), 5]).map((reps, i) => ({ setNumber: i + 1, weight: deload ? bench - 20 : bench, reps })),
+    });
+    lifts.push({
+      workoutId: `f${w}`, date: fri, weekNumber: w + 1, isDeload: deload, prescriptionKey: "fri-strict-pull-up", exerciseSlug: "strict-pull-up",
+      sets: [0, 1, 2].map((i) => ({ setNumber: i + 1, weight: Math.max(0, 50 - w * 5), reps: 6 + Math.min(2, w % 3) })),
+    });
+    lifts.push({
+      workoutId: `d${w}`, date: fri, weekNumber: w + 1, isDeload: deload, prescriptionKey: "fri-dip", exerciseSlug: "dip",
+      sets: [0, 1, 2].map((i) => ({ setNumber: i + 1, weight: Math.max(0, 40 - w * 5), reps: 7 + (w % 3) })),
+    });
+    for (let d = 0; d < 5; d++) if (!(w === 2 && d === 3)) completed.push(addDays(mon, d));
+    for (const [d, m] of [[0, 15 + w * 2], [2, 20 + w * 2], [4, 18 + w * 2], [5, 30 + w * 4]] as const) {
+      cardio.push({ date: addDays(mon, d), actualMinutes: deload ? Math.round(m * 0.65) : m, rpe: 2 + ((w + d) % 3 === 0 ? 1 : 0) });
+    }
+  }
+  return { lifts, cardio, completedLiftingDates: completed };
+}
+
 export default async function Gallery({ searchParams }: PageProps<"/dev/gallery">) {
   if (process.env.NODE_ENV === "production") notFound();
   const view = (await searchParams).view as View | undefined;
@@ -177,6 +213,29 @@ export default async function Gallery({ searchParams }: PageProps<"/dev/gallery"
         isDeload={false}
         persist={false}
       />
+    );
+  }
+
+  if (view.startsWith("progress-")) {
+    const sp = await searchParams;
+    const data: ProgressData = view === "progress-empty" ? { lifts: [], cardio: [], completedLiftingDates: [] } : progressFixture();
+    return (
+      <>
+        <TopBar />
+        <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+          <ProgressView
+            block={block}
+            data={data}
+            startDate="2026-09-28"
+            today="2026-11-18"
+            currentWeek={8}
+            lift={typeof sp.lift === "string" ? sp.lift : "bench-press"}
+            rel={sp.rel === "dip" ? "dip" : "pull-up"}
+            basePath={`/dev/gallery?view=${view}`}
+          />
+        </main>
+        <BottomNav />
+      </>
     );
   }
 

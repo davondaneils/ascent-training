@@ -106,6 +106,7 @@ export function TodayView({ block, exerciseIds, userId, today, workout, cardioLo
             name: exercise(p.exerciseSlug).name,
             detail: formatPrescription(p),
             notes: p.notes,
+            holdSeconds: p.durationSeconds,
           }))}
         />
       )}

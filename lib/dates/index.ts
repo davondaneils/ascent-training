@@ -74,3 +74,8 @@ export function monthDay(date: LocalDate): string {
 export function shortWeekday(dow: DayOfWeek): string {
   return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][dow - 1];
 }
+
+/** "Oct 5" */
+export function shortDate(date: LocalDate): string {
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(civilDate(date));
+}

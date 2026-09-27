@@ -49,6 +49,7 @@ export default async function WorkoutPage({ params }: PageProps<"/workout/[worko
         name: block.exercises.find((x) => x.slug === p.exerciseSlug)?.name ?? p.exerciseSlug,
         detail: formatPrescription(p),
         notes: p.notes,
+        holdSeconds: p.durationSeconds,
       }))}
       prepDone={[...prepDone]}
     />
