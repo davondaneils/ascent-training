@@ -37,3 +37,22 @@ export function formatSet(set: Pick<LoggedSet, "weight" | "reps">, loadType: Loa
 export function formatMinutes(min: number, max: number | null): string {
   return `${range(min, max)} min`;
 }
+
+/** "185 × 6 / 6 / 5 / 5" when the load is constant, otherwise "185 × 6 · 180 × 6". */
+export function formatSetsCompact(sets: Pick<LoggedSet, "weight" | "reps">[], loadType: LoadType): string {
+  if (sets.length === 0) return "";
+  const weights = new Set(sets.map((s) => s.weight));
+  const weighted = loadType !== "bodyweight" && loadType !== "none";
+  if (weighted && weights.size === 1 && sets[0].weight !== null) {
+    const head = formatSet(sets[0], loadType).split(" × ")[0];
+    return `${head} × ${sets.map((s) => s.reps ?? 0).join(" / ")}`;
+  }
+  if (!weighted || weights.size === 1) return `${sets.map((s) => s.reps ?? 0).join(" / ")} reps`;
+  return sets.map((s) => formatSet(s, loadType)).join(" · ");
+}
+
+export function weightLabel(loadType: LoadType): string {
+  if (loadType === "assisted") return "Assistance";
+  if (loadType === "dumbbell") return "Weight (each)";
+  return "Weight";
+}

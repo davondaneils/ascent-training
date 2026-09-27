@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Card, Eyebrow } from "@/components/shared/card";
 import { Button } from "@/components/ui/button";
 import type { WorkoutStatus } from "@/lib/data/today";
+import { startWorkout } from "@/app/(app)/(enrolled)/workout/actions";
 
 interface Props {
   name: string;
@@ -33,9 +34,11 @@ export function WorkoutCard({ name, exerciseCount, durationMinutes, isDeload, wo
           </Button>
         </div>
       ) : (
-        <Button asChild size="xl">
-          <Link href="/workout/start">{status === "in_progress" ? "Resume Workout" : "Start Workout"}</Link>
-        </Button>
+        <form action={startWorkout}>
+          <Button type="submit" size="xl">
+            {status === "in_progress" ? "Resume Workout" : "Start Workout"}
+          </Button>
+        </form>
       )}
     </Card>
   );

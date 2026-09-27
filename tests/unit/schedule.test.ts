@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { addDays, dayOfWeek, daysBetween, nextMonday, startOfWeek, toLocalDate } from "@/lib/dates";
 import { deloadMinutes, deloadSets } from "@/lib/training/deload";
-import { formatMinutes, formatPrescription, formatRest, formatSet } from "@/lib/training/format";
+import {
+  formatMinutes,
+  formatPrescription,
+  formatRest,
+  formatSet,
+  formatSetsCompact,
+  weightLabel,
+} from "@/lib/training/format";
 import { PHASE_1 } from "@/lib/training/programs/phase-1";
 import {
   estimateDurationMinutes,
@@ -282,5 +289,18 @@ describe("program week range", () => {
     const { programWeekRange } = await import("@/lib/training/schedule");
     expect(programWeekRange("2026-10-05", 1)).toEqual({ from: "2026-10-05", to: "2026-10-11" });
     expect(programWeekRange("2026-10-05", 3)).toEqual({ from: "2026-10-19", to: "2026-10-25" });
+  });
+});
+
+describe("compact set lines", () => {
+  it("formats a session's sets", () => {
+    const s = (weight: number | null, reps: number) => ({ weight, reps });
+    expect(formatSetsCompact([s(185, 6), s(185, 6), s(185, 5), s(185, 5)], "barbell")).toBe("185 × 6 / 6 / 5 / 5");
+    expect(formatSetsCompact([s(185, 6), s(180, 6)], "barbell")).toBe("185 × 6 · 180 × 6");
+    expect(formatSetsCompact([s(null, 10), s(null, 9)], "bodyweight")).toBe("10 / 9 reps");
+    expect(formatSetsCompact([s(40, 8), s(40, 7)], "assisted")).toBe("−40 × 8 / 7");
+    expect(formatSetsCompact([s(0, 8), s(0, 7)], "assisted")).toBe("BW × 8 / 7");
+    expect(formatSetsCompact([], "barbell")).toBe("");
+    expect(weightLabel("assisted")).toBe("Assistance");
   });
 });
