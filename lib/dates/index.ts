@@ -55,3 +55,22 @@ export function nextMonday(date: LocalDate): LocalDate {
   const dow = dayOfWeek(date);
   return dow === 1 ? date : addDays(date, 8 - dow);
 }
+
+function civilDate(date: LocalDate): Date {
+  return new Date(toUtcMs(date));
+}
+
+/** "Monday" */
+export function weekdayName(date: LocalDate): string {
+  return new Intl.DateTimeFormat("en-US", { weekday: "long", timeZone: "UTC" }).format(civilDate(date));
+}
+
+/** "September 28" */
+export function monthDay(date: LocalDate): string {
+  return new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", timeZone: "UTC" }).format(civilDate(date));
+}
+
+/** "Mon" */
+export function shortWeekday(dow: DayOfWeek): string {
+  return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][dow - 1];
+}

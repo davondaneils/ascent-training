@@ -267,3 +267,20 @@ describe("formatting", () => {
     expect(formatMinutes(30, null)).toBe("30 min");
   });
 });
+
+describe("date labels", () => {
+  it("formats civil dates without time-zone drift", async () => {
+    const { weekdayName, monthDay, shortWeekday } = await import("@/lib/dates");
+    expect(weekdayName("2026-09-28")).toBe("Monday");
+    expect(monthDay("2026-09-28")).toBe("September 28");
+    expect(shortWeekday(7)).toBe("Sun");
+  });
+});
+
+describe("program week range", () => {
+  it("spans seven days from the start date", async () => {
+    const { programWeekRange } = await import("@/lib/training/schedule");
+    expect(programWeekRange("2026-10-05", 1)).toEqual({ from: "2026-10-05", to: "2026-10-11" });
+    expect(programWeekRange("2026-10-05", 3)).toEqual({ from: "2026-10-19", to: "2026-10-25" });
+  });
+});

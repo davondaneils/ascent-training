@@ -1,6 +1,6 @@
 // Which week, which day, which prescription. Pure; the caller supplies "now".
 
-import { daysBetween, dayOfWeek, toLocalDate, PROGRAM_TIME_ZONE } from "@/lib/dates";
+import { addDays, daysBetween, dayOfWeek, toLocalDate, PROGRAM_TIME_ZONE } from "@/lib/dates";
 import { applyDeload, isDeloadWeek } from "./deload";
 import type {
   CardioPrescription,
@@ -106,6 +106,12 @@ export function resolveToday(
     return { status: "before_start", date, startDate: position.startDate, daysUntilStart: position.daysUntilStart };
   }
   return { status: "active", date, resolved: resolveDay(block, position.week, date) };
+}
+
+/** First and last civil date of a program week (weeks run from the start date, 7 days each). */
+export function programWeekRange(startDate: LocalDate, week: number): { from: LocalDate; to: LocalDate } {
+  const from = addDays(startDate, (week - 1) * 7);
+  return { from, to: addDays(from, 6) };
 }
 
 /** Scheduled sessions in a program week, for "2 / 5 lifting · 1 / 4 cardio". */
