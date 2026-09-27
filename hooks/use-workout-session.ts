@@ -11,32 +11,35 @@ import { sessionReducer, type SessionAction, type WorkoutSession } from "@/lib/t
  * Active workout state: the pure reducer, mirrored to a local snapshot (reload recovery)
  * and to the outbox (cloud sync). Writes are optimistic and never block the UI.
  */
-export function useWorkoutSession(initial: WorkoutSession, ctx: OpsContext) {
+export function useWorkoutSession(initial: WorkoutSession, ctx: OpsContext, { persist = true }: { persist?: boolean } = {}) {
   const [session, setSession] = useState(initial);
   const ref = useRef(initial);
   const ctxRef = useRef(ctx);
 
   // Recover unsynced local state after a reload (client only, after hydration).
   useEffect(() => {
+    if (!persist) return;
     const merged = mergeSession(initial, loadLocalSession(initial.workoutId));
     if (merged !== ref.current) {
       ref.current = merged;
       setSession(merged);
     }
-  }, [initial]);
+  }, [initial, persist]);
 
   useEffect(() => {
+    if (!persist) return;
     if (session.status === "in_progress") saveLocalSession(session);
     else clearLocalSession(session.workoutId);
-  }, [session]);
+  }, [session, persist]);
 
+  const persistRef = useRef(persist);
   const dispatch = useCallback((action: SessionAction) => {
     const prev = ref.current;
     const next = sessionReducer(prev, action);
     if (next === prev) return;
     ref.current = next;
     setSession(next);
-    const ops = opsForAction(prev, next, action, ctxRef.current);
+    const ops = persistRef.current ? opsForAction(prev, next, action, ctxRef.current) : [];
     if (ops.length > 0) {
       const box = getOutbox();
       for (const op of ops) box.enqueue(op);

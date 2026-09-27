@@ -65,7 +65,7 @@ export function MobilityChecklist({ title, date, userId, items, initiallyDone }:
       <div className="flex items-baseline justify-between px-3 pb-1">
         <div className="flex flex-col gap-1">
           <Eyebrow>Mobility</Eyebrow>
-          <h2 className="text-lg font-semibold">{title}</h2>
+          <h2 className="text-subheading">{title}</h2>
         </div>
         <p className="text-[13px] tabular-nums text-text-tertiary">
           {done.size} / {items.length}
@@ -86,7 +86,7 @@ export function MobilityChecklist({ title, date, userId, items, initiallyDone }:
                 <span
                   className={cn(
                     "flex size-6 shrink-0 items-center justify-center rounded-full border transition-colors",
-                    checked ? "border-success bg-success text-white" : "border-border",
+                    checked ? "border-success bg-success text-white" : "border-input",
                   )}
                   aria-hidden
                 >

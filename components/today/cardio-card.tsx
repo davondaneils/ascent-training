@@ -22,11 +22,11 @@ export function CardioCard({ cardio, date, primary, logs }: Props) {
   return (
     <Card className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <Eyebrow>{primary ? "Today" : "Later today"}</Eyebrow>
-        <h2 className={primary ? "text-2xl font-semibold tracking-tight" : "text-lg font-semibold"}>
+        <Eyebrow>{primary ? "Long easy aerobic" : "Later today"}</Eyebrow>
+        <h2 className={primary ? "text-heading" : "text-subheading"}>
           {MODALITY[cardio.modality]} · {target}
         </h2>
-        <p className="text-[15px] text-text-secondary">
+        <p className="text-body text-text-secondary">
           Easy · RPE {cardio.targetRpeMin}–{cardio.targetRpeMax}
         </p>
       </div>

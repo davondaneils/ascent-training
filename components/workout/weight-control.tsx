@@ -20,11 +20,11 @@ export function WeightControl({ value, onChange, step, loadType }: Props) {
   };
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor="weight" className="text-[13px] font-medium text-text-tertiary">
+      <label htmlFor="weight" className="text-meta text-text-tertiary">
         {weightLabel(loadType)}
       </label>
       <div className="flex items-center gap-3">
-        <Button type="button" variant="secondary" size="icon-touch" className="size-14 rounded-2xl" onClick={() => bump(-1)} aria-label={`Decrease by ${step}`}>
+        <Button type="button" variant="outline" size="icon-touch" className="size-14 rounded-2xl border-border-subtle bg-surface" onClick={() => bump(-1)} aria-label={`Decrease by ${step}`}>
           <Minus className="size-6" />
         </Button>
         <div className="flex flex-1 items-baseline justify-center gap-1.5">
@@ -42,11 +42,11 @@ export function WeightControl({ value, onChange, step, loadType }: Props) {
               if (Number.isFinite(n)) onChange(n);
             }}
             onFocus={(e) => e.currentTarget.select()}
-            className="w-28 bg-transparent text-center text-5xl font-semibold tabular-nums tracking-tight text-text-primary outline-none placeholder:text-text-tertiary"
+            className="w-32 bg-transparent text-center text-display text-text-primary outline-none placeholder:text-text-tertiary"
           />
           <span className="text-lg text-text-secondary">lb</span>
         </div>
-        <Button type="button" variant="secondary" size="icon-touch" className="size-14 rounded-2xl" onClick={() => bump(1)} aria-label={`Increase by ${step}`}>
+        <Button type="button" variant="outline" size="icon-touch" className="size-14 rounded-2xl border-border-subtle bg-surface" onClick={() => bump(1)} aria-label={`Increase by ${step}`}>
           <Plus className="size-6" />
         </Button>
       </div>

@@ -12,12 +12,15 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import type { OverviewRow } from "@/lib/training/session";
+import { ExerciseThumb } from "./exercise-media";
+import type { ExerciseInfo } from "./types";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "./confirm-dialog";
 
 interface Props {
   rows: OverviewRow[];
   names: Record<string, string>; // by workout exercise id
+  infos: Record<string, ExerciseInfo>;
   onJump: (id: string) => void;
   onFinish: () => void;
   onDiscard: () => void;
@@ -25,12 +28,12 @@ interface Props {
 
 const ICON = {
   complete: { Icon: Check, label: "Done", cls: "text-success" },
-  current: { Icon: ArrowRight, label: "Current", cls: "text-text-primary" },
+  current: { Icon: ArrowRight, label: "Current", cls: "text-accent" },
   partial: { Icon: CircleDashed, label: "Started", cls: "text-text-secondary" },
   not_started: { Icon: Circle, label: "Not started", cls: "text-text-tertiary" },
 } as const;
 
-export function OverviewDrawer({ rows, names, onJump, onFinish, onDiscard }: Props) {
+export function OverviewDrawer({ rows, names, infos, onJump, onFinish, onDiscard }: Props) {
   const [open, setOpen] = useState(false);
   const allDone = rows.every((r) => r.status === "complete");
   return (
@@ -43,7 +46,7 @@ export function OverviewDrawer({ rows, names, onJump, onFinish, onDiscard }: Pro
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="text-left">
-          <DrawerTitle className="text-xl">Workout</DrawerTitle>
+          <DrawerTitle className="text-heading">Workout</DrawerTitle>
           <DrawerDescription>Tap an exercise to go to it. Logged sets are kept.</DrawerDescription>
         </DrawerHeader>
         <ul className="flex max-h-[60vh] flex-col overflow-y-auto px-2">
@@ -60,10 +63,11 @@ export function OverviewDrawer({ rows, names, onJump, onFinish, onDiscard }: Pro
                   aria-current={r.isCurrent ? "step" : undefined}
                   className={cn(
                     "flex min-h-14 w-full items-center gap-3 rounded-[14px] px-3 text-left active:bg-surface-subtle",
-                    r.isCurrent && "bg-surface-subtle",
+                    r.isCurrent && "bg-accent-soft",
                   )}
                 >
                   <Icon className={cn("size-5 shrink-0", cls)} aria-label={label} />
+                  {infos[r.id] && <ExerciseThumb info={infos[r.id]} className="size-10 rounded-[10px]" />}
                   <span className={cn("flex-1 text-[16px]", r.isCurrent ? "font-semibold" : "", r.status === "complete" && "text-text-secondary")}>
                     {names[r.id]}
                   </span>

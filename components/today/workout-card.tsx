@@ -1,32 +1,55 @@
 import { Check } from "lucide-react";
 import Link from "next/link";
+import { startWorkout } from "@/app/(app)/(enrolled)/workout/actions";
 import { Card, Eyebrow } from "@/components/shared/card";
 import { Button } from "@/components/ui/button";
+import { ExerciseThumb } from "@/components/workout/exercise-media";
 import type { WorkoutStatus } from "@/lib/data/today";
-import { startWorkout } from "@/app/(app)/(enrolled)/workout/actions";
+import type { Exercise } from "@/lib/training/types";
+
+export interface PreviewExercise {
+  key: string;
+  exercise: Exercise;
+  detail: string; // "4 × 4–6"
+}
 
 interface Props {
   name: string;
-  exerciseCount: number;
   durationMinutes: number;
   isDeload: boolean;
+  exercises: PreviewExercise[];
   workout: { id: string; status: WorkoutStatus } | null;
 }
 
-export function WorkoutCard({ name, exerciseCount, durationMinutes, isDeload, workout }: Props) {
+const PREVIEW = 4;
+
+export function WorkoutCard({ name, durationMinutes, isDeload, exercises, workout }: Props) {
   const status = workout?.status;
+  const rest = exercises.length - PREVIEW;
   return (
     <Card className="flex flex-col gap-5">
-      <div className="flex flex-col gap-1">
-        <Eyebrow>{isDeload ? "Today · Deload" : "Today"}</Eyebrow>
-        <h2 className="text-2xl font-semibold tracking-tight text-text-primary">{name}</h2>
-        <p className="text-[15px] text-text-secondary">
-          {exerciseCount} exercises · ~{durationMinutes} min
+      <div className="flex flex-col gap-1.5">
+        <Eyebrow>{isDeload ? "Lifting · Deload week" : "Lifting"}</Eyebrow>
+        <h2 className="text-heading">{name}</h2>
+        <p className="text-body tabular-nums text-text-secondary">
+          {exercises.length} exercises · ~{durationMinutes} min
         </p>
       </div>
+
+      <ul className="flex flex-col gap-2.5">
+        {exercises.slice(0, PREVIEW).map((p) => (
+          <li key={p.key} className="flex items-center gap-3">
+            <ExerciseThumb info={p.exercise} className="size-11" />
+            <span className="flex-1 truncate text-[15px] text-text-primary">{p.exercise.name}</span>
+            <span className="text-[15px] tabular-nums text-text-tertiary">{p.detail}</span>
+          </li>
+        ))}
+        {rest > 0 && <li className="pl-14 text-meta text-text-tertiary">+{rest} more</li>}
+      </ul>
+
       {status === "completed" ? (
-        <div className="flex items-center justify-between">
-          <p className="flex items-center gap-2 text-[15px] font-medium text-success">
+        <div className="flex items-center justify-between border-t border-border-subtle pt-4">
+          <p className="flex items-center gap-2 text-body font-medium text-success">
             <Check className="size-5" aria-hidden /> Workout complete
           </p>
           <Button asChild variant="ghost" size="touch">

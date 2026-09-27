@@ -5,6 +5,7 @@
 // actionable value (timer / rest) and the upper bound is kept for display.
 
 import { deloadMinutes } from "../deload";
+import { mediaUrls } from "./media-map";
 import type {
   CardioPrescription,
   DayOfWeek,
@@ -31,9 +32,8 @@ function exercise(
     category,
     loadType,
     loadDirection: loadType === "assisted" ? "lower_is_harder" : "higher_is_harder",
-    imageUrl: null,
+    ...mediaUrls(slug),
     videoUrl: null,
-    animationUrl: null,
     instructions: null,
   };
 }

@@ -8,7 +8,7 @@ import { formatClock, remainingMs, startRest, type RestTimer } from "@/lib/train
 /** Optional countdown for timed holds. Timestamp-based like the rest timer. */
 export function HoldTimer({ seconds, perSide }: { seconds: number; perSide: boolean }) {
   const [timer, setTimer] = useState<RestTimer | null>(null);
-  const now = useNow(250, timer !== null);
+  const now = useNow(250, timer !== null) ?? timer?.startedAt ?? 0;
   const left = timer ? remainingMs(timer, now) : seconds * 1000;
   const running = timer !== null && left > 0;
 

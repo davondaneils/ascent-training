@@ -42,6 +42,8 @@ interface Props {
   date: string;
   prep: ChecklistItem[];
   prepDone: string[];
+  /** Gallery/preview: no local snapshot, no cloud writes. */
+  persist?: boolean;
 }
 
 const isWeighted = (info: ExerciseInfo) => info.loadType !== "bodyweight" && info.loadType !== "none";
@@ -66,10 +68,11 @@ function targetLine(info: ExerciseInfo, weight: number | null): string {
   return parts.join(" · ");
 }
 
-export function ActiveWorkout({ initialSession, infos, meta, userId, exerciseIdBySlug, date, prep, prepDone }: Props) {
+export function ActiveWorkout({ initialSession, infos, meta, userId, exerciseIdBySlug, date, prep, prepDone, persist = true }: Props) {
   const router = useRouter();
-  const [session, dispatch] = useWorkoutSession(initialSession, { userId, exerciseIdBySlug });
-  const now = useNow(250);
+  const [session, dispatch] = useWorkoutSession(initialSession, { userId, exerciseIdBySlug }, { persist });
+  // Before hydration there is no clock: treat any rest as finished so SSR and first render agree.
+  const now = useNow(250) ?? Number.MAX_SAFE_INTEGER;
   const view = getSessionView(session, now);
   const [editing, setEditing] = useState<{ set: SessionSet; exerciseId: string } | null>(null);
   const anySets = session.exercises.some((e) => e.sets.length > 0);
@@ -85,7 +88,7 @@ export function ActiveWorkout({ initialSession, infos, meta, userId, exerciseIdB
   );
 
   if (session.status === "completed") {
-    return <WorkoutSummary meta={meta} summary={summarizeSession(session, now)} infoByExercise={infos} />;
+    return <WorkoutSummary meta={meta} summary={summarizeSession(session, session.completedAt ?? session.startedAt)} infoByExercise={infos} />;
   }
   if (view.kind === "ended") return null;
 
@@ -119,11 +122,12 @@ export function ActiveWorkout({ initialSession, infos, meta, userId, exerciseIdB
             <span className="text-[15px] font-medium tabular-nums text-text-secondary" aria-label={`Exercise ${position} of ${session.exercises.length}`}>
               {position} / {session.exercises.length}
             </span>
-            <SyncStatus />
+            {persist && <SyncStatus />}
           </div>
           <OverviewDrawer
             rows={getOverview(session)}
             names={names}
+            infos={infos}
             onJump={(id) => {
               setPrepDismissed(true);
               dispatch({ type: "jump", exerciseId: id });
@@ -145,8 +149,8 @@ export function ActiveWorkout({ initialSession, infos, meta, userId, exerciseIdB
             {showPrep ? (
               <div className="flex flex-1 flex-col gap-5 pb-32 pt-2">
                 <div className="flex flex-col gap-1">
-                  <p className="text-[13px] font-medium text-text-tertiary">Before you start</p>
-                  <h1 className="text-[28px] font-semibold leading-tight tracking-tight">Warm-up</h1>
+                  <p className="text-meta text-text-tertiary">Before you start</p>
+                  <h1 className="text-title">Warm-up</h1>
                 </div>
                 <MobilityChecklist title={meta.dayName} date={date} userId={userId} items={prep} initiallyDone={prepDone} />
                 <BottomBar>
@@ -230,46 +234,48 @@ function SetEntry({ exercise, info, setNumber, onEdit, onComplete }: SetEntryPro
   return (
     <div className="flex flex-1 flex-col gap-5 pb-32 pt-1">
       <div className="flex flex-col gap-3">
-        <h1 className="text-[28px] font-semibold leading-tight tracking-tight">{info.name}</h1>
+        <h1 className="text-heading">{info.name}</h1>
         <ExerciseMedia info={info} />
-        <p className="text-[17px] tabular-nums text-text-primary">
-          {info.prescriptionText}
-          <span className="text-text-secondary">
-            {" · "}
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-subheading tabular-nums">{info.prescriptionText}</p>
+          <p className="text-[15px] tabular-nums text-text-secondary">
             {info.restSeconds !== null ? `Rest ${formatRest(info.restSeconds)}` : "Rest as needed"}
-          </span>
-        </p>
-        <div className="flex flex-col gap-0.5 text-[15px]">
+          </p>
+        </div>
+        <div className="flex flex-col gap-0.5 rounded-[14px] bg-surface-subtle px-3.5 py-2.5">
           {info.previous && info.previous.length > 0 ? (
-            <p className="text-text-secondary">
-              <span className="text-text-tertiary">Previous </span>
-              <span className="tabular-nums">
+            <p className="flex items-baseline gap-2 text-[15px]">
+              <span className="text-meta text-text-tertiary">Previous</span>
+              <span className="tabular-nums text-text-primary">
                 {timed ? `${info.previous.length} holds` : info.previous.map((s) => formatSet(s, info.loadType).replace(" × ", "×")).join(" · ")}
               </span>
             </p>
           ) : (
-            <p className="text-text-tertiary">First session</p>
+            <p className="text-[15px] text-text-secondary">First session</p>
           )}
           {info.recommendation.reason && info.recommendation.kind !== "first_session" && (
-            <p className="text-text-tertiary">{info.recommendation.reason}</p>
+            <p className="text-meta font-normal text-text-secondary">{info.recommendation.reason}</p>
           )}
         </div>
       </div>
 
-      <div className="flex flex-col gap-5 border-t border-border-subtle pt-5">
-        <div className="flex items-center justify-between">
-          <p className="text-lg font-semibold tabular-nums">
-            Set {setNumber} of {exercise.targetSets}
-          </p>
+      <div className="flex flex-col gap-5 pt-1">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <p className="text-subheading tabular-nums">
+              Set {setNumber} <span className="text-text-tertiary">of {exercise.targetSets}</span>
+            </p>
+            <SetDots done={exercise.sets.length} total={exercise.targetSets} />
+          </div>
           {exercise.sets.length > 0 && (
-            <div className="flex gap-1.5">
+            <div className="flex gap-1.5 overflow-x-auto [scrollbar-width:none]">
               {exercise.sets.map((s) => (
                 <button
                   key={s.id}
                   type="button"
                   onClick={() => onEdit(s)}
                   aria-label={`Edit set ${s.setNumber}`}
-                  className="h-9 rounded-full bg-surface-subtle px-3 text-[13px] tabular-nums text-text-secondary"
+                  className="h-9 shrink-0 rounded-full border border-border-subtle bg-surface px-3 text-[13px] tabular-nums text-text-secondary"
                 >
                   {timed ? `✓ ${s.setNumber}` : formatSet(s, info.loadType).replace(" × ", "×")}
                 </button>
@@ -295,5 +301,22 @@ function SetEntry({ exercise, info, setNumber, onEdit, onComplete }: SetEntryPro
         </Button>
       </BottomBar>
     </div>
+  );
+}
+
+/** ●●○○ — done sets filled, the current set ringed in the accent colour. */
+function SetDots({ done, total }: { done: number; total: number }) {
+  return (
+    <span className="flex items-center gap-1.5" aria-hidden>
+      {Array.from({ length: total }, (_, i) => (
+        <span
+          key={i}
+          className={cn(
+            "size-2 rounded-full",
+            i < done ? "bg-text-primary" : i === done ? "bg-accent ring-2 ring-accent-soft" : "bg-border-subtle",
+          )}
+        />
+      ))}
+    </span>
   );
 }

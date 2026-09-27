@@ -5,6 +5,8 @@ import { supabaseAnonKey, supabaseUrl } from "./env";
 const PUBLIC_PATHS = ["/login", "/auth/"];
 
 function isPublic(pathname: string): boolean {
+  // Dev-only visual QA gallery renders fixtures, never user data.
+  if (process.env.NODE_ENV !== "production" && pathname.startsWith("/dev/gallery")) return true;
   return PUBLIC_PATHS.some((p) => (p.endsWith("/") ? pathname.startsWith(p) : pathname === p));
 }
 

@@ -25,8 +25,9 @@ export function WeekStrip({ weeks, currentWeek, selectedWeek, deloadWeeks }: Pro
             aria-label={`Week ${w}${current ? ", current" : ""}${deload ? ", deload" : ""}`}
             className={cn(
               "relative flex h-12 flex-col items-center justify-center rounded-[12px] text-[15px] font-medium tabular-nums transition-colors",
-              selected ? "bg-primary text-primary-foreground" : "bg-surface-subtle text-text-primary",
-              current && !selected && "ring-2 ring-inset ring-text-primary",
+              selected ? "bg-primary text-primary-foreground" : "border border-border-subtle bg-surface text-text-primary",
+              current && !selected && "border-accent text-accent ring-1 ring-inset ring-accent",
+              current && selected && "bg-accent text-accent-foreground",
             )}
           >
             {w}

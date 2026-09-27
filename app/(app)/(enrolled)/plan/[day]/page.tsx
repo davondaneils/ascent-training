@@ -51,7 +51,7 @@ export default async function PlanDayPage({ params, searchParams }: PageProps<"/
           Week {week}
           {deload && " · Deload"}
         </p>
-        <h1 className="text-[28px] font-semibold leading-tight tracking-tight">{day.fullName}</h1>
+        <h1 className="text-title">{day.fullName}</h1>
         {day.notes && <p className="pt-1 text-[15px] text-text-secondary">{day.notes}</p>}
       </div>
 

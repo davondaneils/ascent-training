@@ -29,7 +29,7 @@ export function ExerciseComplete({ name, summary, next, restRemainingMs, onConti
         >
           <Check className="size-8" strokeWidth={2.5} aria-hidden />
         </motion.div>
-        <h2 className="text-2xl font-semibold tracking-tight">{name} complete</h2>
+        <h2 className="text-heading">{name} complete</h2>
         <p className="text-[17px] tabular-nums text-text-secondary">{summary}</p>
         {restRemainingMs > 0 && (
           <p className="text-[15px] tabular-nums text-text-tertiary">Rest {formatClock(restRemainingMs)}</p>
@@ -39,11 +39,11 @@ export function ExerciseComplete({ name, summary, next, restRemainingMs, onConti
       <div className="flex flex-col gap-4">
         {next ? (
           <>
-            <div className="flex items-center gap-3 rounded-[16px] bg-surface-subtle p-3">
-              <ExerciseThumb info={next} />
+            <div className="flex items-center gap-3 rounded-[16px] border border-border-subtle bg-surface p-3">
+              <ExerciseThumb info={next} className="size-14" />
               <div className="flex flex-col">
-                <span className="text-[13px] text-text-tertiary">Next</span>
-                <span className="text-[17px] font-medium">{next.name}</span>
+                <span className="text-meta text-text-tertiary">Next</span>
+                <span className="text-subheading">{next.name}</span>
               </div>
             </div>
             <Button size="xl" onClick={onContinue}>Continue</Button>

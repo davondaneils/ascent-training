@@ -4,12 +4,12 @@ import { cn } from "@/lib/utils";
 export function Card({ className, ...props }: React.ComponentProps<"section">) {
   return (
     <section
-      className={cn("rounded-[20px] border border-border-subtle bg-surface p-5", className)}
+      className={cn("rounded-[20px] border border-border-subtle bg-surface p-5 shadow-[0_1px_2px_oklch(0.2_0.01_260/0.04)]", className)}
       {...props}
     />
   );
 }
 
 export function Eyebrow({ className, ...props }: React.ComponentProps<"p">) {
-  return <p className={cn("text-[13px] font-medium text-text-tertiary", className)} {...props} />;
+  return <p className={cn("text-meta text-text-tertiary", className)} {...props} />;
 }

@@ -21,7 +21,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
   return (
     <div className="flex flex-col gap-6 pt-2">
       <header className="flex flex-col gap-3">
-        <h1 className="text-[34px] font-semibold leading-tight tracking-tight">{block.name}</h1>
+        <h1 className="text-title">{block.name}</h1>
         <p className="text-[15px] text-text-secondary">
           {currentWeek ? `Week ${currentWeek} of ${block.durationWeeks}` : `Starts ${enrollment!.startDate}`}
         </p>
@@ -40,7 +40,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
       />
 
       <section aria-label={`Week ${selectedWeek}`} className="flex flex-col">
-        <h2 className="px-1 pb-2 text-[13px] font-medium text-text-tertiary">
+        <h2 className="px-1 pb-2 text-meta text-text-tertiary">
           Week {selectedWeek}
           {block.deloadWeeks.includes(selectedWeek) && " · Deload"}
         </h2>
@@ -53,11 +53,11 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
                   href={`/plan/${d.dayOfWeek}?week=${selectedWeek}`}
                   className="flex min-h-16 items-center gap-4 px-4 py-3 active:bg-surface-subtle"
                 >
-                  <span className="w-9 text-[13px] font-medium text-text-tertiary">{shortWeekday(d.dayOfWeek)}</span>
+                  <span className="w-9 text-meta text-text-tertiary">{shortWeekday(d.dayOfWeek)}</span>
                   <span className="flex flex-1 flex-col">
                     <span className="text-[15px] text-text-primary">{d.name}</span>
                     {cardio && (
-                      <span className="text-[13px] text-text-tertiary">
+                      <span className="text-meta font-normal text-text-tertiary">
                         {d.sessionType === "lifting" ? "+ " : ""}Bike {formatMinutes(cardio.targetMinutes, cardio.targetMinutesMax)}
                       </span>
                     )}

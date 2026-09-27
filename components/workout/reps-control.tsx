@@ -24,10 +24,10 @@ export function RepsControl({ value, onChange, repMin, repMax, perSide }: Props)
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between">
-        <span id="reps-label" className="text-[13px] font-medium text-text-tertiary">
+        <span id="reps-label" className="text-meta text-text-tertiary">
           Reps{perSide ? " per side" : ""}
         </span>
-        <label className="flex items-center gap-2 text-[13px] text-text-tertiary">
+        <label className="flex items-center gap-2 text-meta text-text-tertiary">
           Other
           <input
             aria-label="Reps, manual entry"
@@ -41,7 +41,7 @@ export function RepsControl({ value, onChange, repMin, repMax, perSide }: Props)
             }}
             className={cn(
               "h-11 w-14 rounded-[12px] border border-border-subtle bg-surface text-center text-lg tabular-nums text-text-primary outline-none focus:border-focus",
-              outside && "border-text-primary",
+              outside && "border-accent",
             )}
           />
         </label>
@@ -55,7 +55,7 @@ export function RepsControl({ value, onChange, repMin, repMax, perSide }: Props)
             onClick={() => onChange(value === n ? null : n)}
             className={cn(
               "flex h-14 min-w-14 flex-1 shrink-0 items-center justify-center rounded-2xl text-xl font-semibold tabular-nums transition-colors",
-              value === n ? "bg-primary text-primary-foreground" : "bg-surface-subtle text-text-primary active:bg-border-subtle",
+              value === n ? "bg-accent text-accent-foreground" : "border border-border-subtle bg-surface text-text-primary active:bg-surface-subtle",
             )}
           >
             {n}

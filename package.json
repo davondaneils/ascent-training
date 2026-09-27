@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "db:seed:generate": "tsx scripts/generate-seed.ts",
-    "db:push": "tsx --env-file=.env.local scripts/db.ts"
+    "db:push": "tsx --env-file=.env.local scripts/db.ts",
+    "media:fetch": "tsx scripts/fetch-exercise-media.ts"
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",
