@@ -8,19 +8,21 @@ import { sendCode, signInWithPassword, verifyCode, type LoginState } from "./act
 
 async function loginAction(prev: LoginState, form: FormData): Promise<LoginState> {
   const intent = form.get("intent");
-  if (intent === "use-password") return { step: "password" };
-  if (intent === "use-link") return { step: "email" };
+  // Carry the typed email across steps: React resets the form after each action.
+  const email = String(form.get("email") ?? "") || undefined;
+  if (intent === "use-password") return { step: "password", email };
+  if (intent === "use-link") return { step: "email", email };
   if (prev.step === "password") return signInWithPassword(prev, form);
   return prev.step === "email" ? sendCode(prev, form) : verifyCode(prev, form);
 }
 
 const inputClass = "h-12 rounded-[14px] px-4 text-base";
 
-function EmailField() {
+function EmailField({ defaultValue }: { defaultValue?: string }) {
   return (
     <div className="flex flex-col gap-2">
       <Label htmlFor="email" className="text-text-secondary">Email</Label>
-      <Input id="email" name="email" type="email" inputMode="email" autoComplete="username" autoCapitalize="none" required className={inputClass} />
+      <Input id="email" name="email" type="email" inputMode="email" autoComplete="username" autoCapitalize="none" required defaultValue={defaultValue} className={inputClass} />
     </div>
   );
 }
@@ -39,7 +41,7 @@ export function LoginForm() {
   if (state.step === "password") {
     return (
       <form action={action} className="flex flex-col gap-4">
-        <EmailField />
+        <EmailField defaultValue={state.email} />
         <div className="flex flex-col gap-2">
           <Label htmlFor="password" className="text-text-secondary">Password</Label>
           <Input id="password" name="password" type="password" autoComplete="current-password" required className={inputClass} />
@@ -56,7 +58,7 @@ export function LoginForm() {
   if (state.step === "email") {
     return (
       <form action={action} className="flex flex-col gap-4">
-        <EmailField />
+        <EmailField defaultValue={state.email} />
         {state.error && <p role="alert" className="text-sm text-danger">{state.error}</p>}
         <Button type="submit" size="xl" disabled={pending}>
           {pending ? "Sending…" : "Send link"}

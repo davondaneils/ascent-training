@@ -12,7 +12,8 @@ export default defineConfig({
   globalSetup: "./tests/e2e/global-setup.ts",
   globalTeardown: "./tests/e2e/global-teardown.ts",
   use: {
-    baseURL: process.env.E2E_BASE_URL ?? "http://localhost:3000",
+    baseURL: process.env.E2E_BASE_URL ?? "http://localhost:3100",
+    navigationTimeout: 60_000,
     trace: "retain-on-failure",
     timezoneId: "America/Toronto",
     storageState: "tests/e2e/.auth/user.json",
@@ -21,10 +22,12 @@ export default defineConfig({
     // Chromium with iPhone-sized viewport and touch (Chromium only, to keep the install small).
     { name: "phone", use: { ...devices["Pixel 7"], viewport: { width: 390, height: 844 } } },
   ],
+  // A production build (fast, prod-like). The dev clock override is enabled explicitly for tests only.
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000/login",
-    reuseExistingServer: true,
-    timeout: 120_000,
+    command: "npm run build && npm run start -- -p 3100",
+    url: "http://localhost:3100/login",
+    env: { ASCENT_ALLOW_TIME_OVERRIDE: "1" },
+    reuseExistingServer: !process.env.CI,
+    timeout: 600_000,
   },
 });

@@ -8,6 +8,7 @@ export default async function globalSetup() {
   mkdirSync(dirname(STORAGE_STATE), { recursive: true });
   const browser = await chromium.launch();
   const page = await browser.newPage({ baseURL: BASE_URL });
+  page.setDefaultNavigationTimeout(120_000);
   await signIn(page);
   await page.context().storageState({ path: STORAGE_STATE });
   await browser.close();

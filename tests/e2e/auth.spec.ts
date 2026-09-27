@@ -21,7 +21,9 @@ test.describe("auth", () => {
     await page.getByLabel("Email").fill("not-allowed@example.com");
     await page.getByLabel("Password").fill("definitely-wrong");
     await page.getByRole("button", { name: "Sign in" }).click();
-    await expect(page.getByRole("alert")).toHaveText("Email or password is incorrect.");
+    await expect(page.getByRole("alert").filter({ hasText: "Email or password is incorrect." })).toBeVisible();
+    // The typed email survives React's post-action form reset.
+    await expect(page.getByLabel("Email")).toHaveValue("not-allowed@example.com");
     await expect(page).toHaveURL(/\/login$/);
     await context.close();
   });
@@ -31,6 +33,7 @@ test.describe("auth", () => {
     const page = await context.newPage();
     await page.goto("/login");
     await page.getByRole("button", { name: "Email me a sign-in link instead" }).click();
+    await expect(page.getByRole("button", { name: "Send link" })).toBeVisible();
     // Not the allowed address: the app responds identically but sends nothing.
     await page.getByLabel("Email").fill("not-allowed@example.com");
     await page.getByRole("button", { name: "Send link" }).click();

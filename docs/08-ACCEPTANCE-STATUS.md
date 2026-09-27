@@ -1,6 +1,6 @@
 # 08 — Acceptance status
 
-Walkthrough of `07-ACCEPTANCE.md` as of 2026-09-27, against https://ascent-training-pi.vercel.app (commit `fde8491`).
+Walkthrough of `07-ACCEPTANCE.md` as of 2026-09-27, against https://ascent-training-pi.vercel.app. Updated after the first full E2E run (18/18 passing).
 
 Legend:
 - ✅ **Verified**: tested and observed working. The evidence is noted.
@@ -13,7 +13,7 @@ Evidence sources:
 - **gallery**: `/dev/gallery` fixture screens checked in the browser at 375, 390 and 430 px;
 - **owner**: you tested it;
 - **prod**: checked on the live site or in the Supabase database;
-- **e2e**: a Playwright spec exists but **hasn't run yet**, because it needs the `E2E_EMAIL` test account.
+- **e2e**: Playwright suite, **18/18 passing**, run against a production build as the separate `E2E_EMAIL` test account.
 
 ## Authentication
 | Criterion | Status | Evidence / gap |
@@ -21,8 +21,8 @@ Evidence sources:
 | Sign in with email magic link / OTP | ↪ | The magic link works (owner signed in locally; e2e). A 6-digit OTP can't be delivered because Supabase email templates stay locked without custom SMTP. **Password sign-in is the primary method** (owner's choice); the link is the fallback. Owner signed in on prod with a password. |
 | Unauthenticated users can't access app routes | ✅ | prod: `/`, `/today`, `/plan`, `/progress`, `/settings` and `/dev/*` all redirect to `/login`; e2e |
 | Session survives reload | ✅ | owner; e2e |
-| User can sign out | 🟡 | Implemented, and it also clears cached pages. Not yet observed on prod; e2e written. |
-| User data protected by RLS | ✅ | prod: RLS enabled on all 12 tables; anonymous REST call returns `42501`. A cross-user write check is written in e2e. |
+| User can sign out | ✅ | e2e (signs out, then app routes redirect to login); also clears cached pages |
+| User data protected by RLS | ✅ | prod: RLS enabled on all 12 tables; anonymous REST call returns `42501`; e2e: a signed-in user sees only its own profile, and a write for another user is rejected (`42501`) |
 
 ## Today
 | Criterion | Status | Evidence / gap |
@@ -55,13 +55,13 @@ Evidence sources:
 | Overview lists all exercises | ✅ | owner; gallery; e2e |
 | Jump from Overview | ✅ | owner; unit; e2e |
 | Jumping doesn't erase completed work | ✅ | unit; e2e |
-| Completed workout stored with completion time | 🟡 | unit (finish writes `status=completed`, `completed_at`); e2e written. **Not yet seen in the prod DB**: the test workout was never finished. |
-| Reload after completion shows completed | 🟡 | Implemented (server renders the summary for completed workouts); e2e written. Not yet observed. |
+| Completed workout stored with completion time | ✅ | e2e (finish from Overview; database row checked: `status=completed`, `completed_at` set); unit |
+| Reload after completion shows completed | ✅ | e2e (summary after reload; Today shows "Workout complete") |
 
 ## Automatic progression
 | Criterion | Status | Evidence / gap |
 |---|---|---|
-| 185 × 6/6/6/6 → 190 lb | ✅ | unit (exact case) |
+| 185 × 6/6/6/6 → 190 lb | ✅ | unit (exact case); e2e end to end (135 × 6 ×4 → next Monday shows 140 lb, "Up 5 lb — all sets reached 6") |
 | 185 × 6/6/5/5 → 185 lb | ✅ | unit (exact case) |
 | UI explains "Up 5 lb" / "Same load" | ✅ | unit; gallery ("Up 5 lb — all sets reached 6") |
 | Assisted pull-up at top of range → less assistance | ✅ | unit |
@@ -73,7 +73,7 @@ Evidence sources:
 | Correct weekly target appears | ✅ | unit (week-by-week data); owner (Week 2 Monday: 15 min) |
 | Timer starts / pause / finish | ✅ | owner; gallery (pause, reload while running and paused, end early) |
 | Completion asks for RPE 1–10 | ✅ | owner; gallery |
-| Saved row has target, actual, modality, RPE | ✅ | prod DB: `bike, 15, 2, 3` (owner's test, since deleted) |
+| Saved row has target, actual, modality, RPE | ✅ | prod DB: `bike, 15, 2, 3` (owner's test, since deleted); e2e (database row checked) |
 | Survives reload and another-device login | 🟡 | Reload ✅ (owner). Another device: data lives in Supabase, but **not yet tried on a second device**. |
 
 ## Mobility
@@ -151,7 +151,7 @@ Evidence sources:
 |---|---|---|
 | `npm run build` succeeds | ✅ | local and Vercel |
 | Unit tests pass | ✅ | 154/154 |
-| Critical E2E tests pass | ⛔ | **Written, not run.** Needs a separate Supabase test user plus `E2E_EMAIL` in `.env.local`. |
+| Critical E2E tests pass | ✅ | 18/18: auth, Today (every day, Sunday, cardio weeks), Plan, workout (log, auto rest, +30/Skip, reload, Overview jump, finish, completed after reload), next-week progression, cardio |
 | No TypeScript errors | ✅ | `npm run typecheck` |
 | No obvious console errors | ✅ | Hydration mismatch found and fixed; prod login clean; none in the gallery checks |
 | Supabase migrations included | ✅ | `supabase/migrations/` |
@@ -160,12 +160,13 @@ Evidence sources:
 | Vercel deploy succeeds | ✅ | Live at https://ascent-training-pi.vercel.app |
 
 ## Summary
-- **Not met (1):** the E2E suite hasn't been run.
+- **Not met:** none.
 - **Deviation (1):** password sign-in is primary; the magic link is the fallback and OTP codes are unavailable.
-- **Partial (14):** mostly things that need a real iPhone, a second device, or a real network drop, plus a few flows not yet seen on prod: finishing a workout, sign-out, mobility persistence.
+- **Partial (11):** all need a real iPhone, a second device, a real network drop, or the reduce-motion setting (iPhone install and standalone launch, numeric keyboards, timer after locking the phone, one-handed feel, offline states, cross-device history, mobility persistence on prod).
 - Everything else is verified.
 
-### To close the remaining gaps
-1. Create the E2E test user, set `E2E_EMAIL`, and run `npm run test:e2e`. That covers sign-out, finishing a workout, reload after completion, and the second-week +5 lb path end to end.
-2. On the iPhone: Add to Home Screen, open it standalone, check the numeric keyboards, lock the phone mid-rest and come back, toggle airplane mode mid-workout, and tick a Saturday mobility item and reload.
-3. Sign in on a second device and check that history appears.
+### Found and fixed by the E2E run
+- React 19 resets forms after an action, so a failed password attempt (or switching to the link) cleared the typed email. The email now carries across login steps.
+
+### To close the remaining gaps (on the iPhone)
+Add to Home Screen and open it standalone. Check the numeric keyboards. Lock the phone mid-rest and come back. Toggle airplane mode mid-workout, log a set, then reconnect. Tick a Saturday mobility item and reload. Sign in on a second device and check that history appears.

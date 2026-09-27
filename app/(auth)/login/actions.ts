@@ -5,8 +5,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export type LoginState =
-  | { step: "password"; error?: string }
-  | { step: "email"; error?: string }
+  | { step: "password"; email?: string; error?: string }
+  | { step: "email"; email?: string; error?: string }
   | { step: "code"; email: string; error?: string };
 
 /**
@@ -33,21 +33,21 @@ function isAllowed(email: string): boolean {
 export async function signInWithPassword(_prev: LoginState, form: FormData): Promise<LoginState> {
   const email = String(form.get("email") ?? "").trim().toLowerCase();
   const password = String(form.get("password") ?? "");
-  if (!email.includes("@") || password.length === 0) return { step: "password", error: "Enter your email and password." };
-  if (!isAllowed(email)) return { step: "password", error: "Email or password is incorrect." };
+  if (!email.includes("@") || password.length === 0) return { step: "password", email, error: "Enter your email and password." };
+  if (!isAllowed(email)) return { step: "password", email, error: "Email or password is incorrect." };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    if (error.status === 429) return { step: "password", error: "Too many attempts. Try again in a few minutes." };
-    return { step: "password", error: "Email or password is incorrect." };
+    if (error.status === 429) return { step: "password", email, error: "Too many attempts. Try again in a few minutes." };
+    return { step: "password", email, error: "Email or password is incorrect." };
   }
   redirect("/today");
 }
 
 export async function sendCode(_prev: LoginState, form: FormData): Promise<LoginState> {
   const email = String(form.get("email") ?? "").trim().toLowerCase();
-  if (!email.includes("@")) return { step: "email", error: "Enter your email." };
+  if (!email.includes("@")) return { step: "email", email, error: "Enter your email." };
 
   // Same response whether or not the address is allowed; nothing is sent for others.
   if (!isAllowed(email)) {
@@ -63,10 +63,11 @@ export async function sendCode(_prev: LoginState, form: FormData): Promise<Login
   if (error) {
     console.error("signInWithOtp failed", error.status, error.message);
     if (error.status === 429) {
-      return { step: "email", error: "Too many sign-in emails for now. Supabase limits how many it sends per hour. Try again later." };
+      return { step: "email", email, error: "Too many sign-in emails for now. Supabase limits how many it sends per hour. Try again later." };
     }
     return {
       step: "email",
+      email,
       error: `Couldn't send the sign-in email (${error.message}). Check the SMTP settings in Supabase, then try again.`,
     };
   }

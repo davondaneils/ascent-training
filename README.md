@@ -72,7 +72,7 @@ npm run db:seed:generate  # regenerate supabase/seed/phase-1.sql from the progra
 npm run media:fetch       # rebuild exercise illustrations (already committed)
 ```
 
-E2E prerequisites: `npx playwright install chromium`, `E2E_EMAIL` set to a pre-created test user, and the dev server (started automatically). The tests reset and clean up only that account's data.
+E2E prerequisites: `npx playwright install chromium` and `E2E_EMAIL` set to a pre-created test user. The suite builds and starts a production server on port 3100 (with the test-only clock override enabled), then resets and cleans up only that account's data.
 
 ### Dev-only tools (disabled in production)
 - `/dev/gallery`: every key screen rendered from fixtures, plus all exercise illustrations. No login needed in dev.

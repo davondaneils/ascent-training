@@ -60,6 +60,9 @@ test.describe("workout", () => {
     await expect(page.getByRole("heading", { name: "Barbell Bench Press complete" })).toBeVisible();
     await expect.poll(() => setCount(url)).toBe(4);
     await page.getByRole("button", { name: "Continue" }).click();
+    // Rest from bench's last set carries into the next exercise (rest between exercises).
+    await expect(page.getByText("Pull-Up / Assisted Pull-Up · 5–8 reps")).toBeVisible();
+    await page.getByRole("button", { name: "Skip" }).click();
     await expect(page.getByRole("heading", { name: "Pull-Up / Assisted Pull-Up" })).toBeVisible();
 
     // Overview lists all 7 and can jump without losing work.

@@ -9,7 +9,7 @@ try {
   // CI provides env directly.
 }
 
-export const BASE_URL = process.env.E2E_BASE_URL ?? "http://localhost:3000";
+export const BASE_URL = process.env.E2E_BASE_URL ?? "http://localhost:3100";
 export const START_DATE = "2026-09-28"; // a Monday; week 1 of the test enrollment
 export const STORAGE_STATE = "tests/e2e/.auth/user.json";
 
@@ -62,8 +62,8 @@ export async function resetTestUser(): Promise<string> {
 export async function signIn(page: Page): Promise<void> {
   const { data, error } = await adminClient().auth.admin.generateLink({ type: "magiclink", email: env("E2E_EMAIL") });
   if (error) throw error;
-  await page.goto(`/auth/confirm?token_hash=${data.properties.hashed_token}&type=magiclink`);
-  await page.waitForURL(/\/(today|onboarding)/);
+  await page.goto(`/auth/confirm?token_hash=${data.properties.hashed_token}&type=magiclink`, { timeout: 120_000 });
+  await page.waitForURL(/\/(today|onboarding)/, { timeout: 120_000 });
 }
 
 /** Pretend it's `iso` for server-side day logic (dev-only clock override). */
