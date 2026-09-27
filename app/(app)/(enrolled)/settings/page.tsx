@@ -1,0 +1,37 @@
+import { ChevronLeft } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { getAppContext } from "@/lib/data/context";
+import packageJson from "@/package.json";
+import { signOut } from "./actions";
+
+export default async function SettingsPage() {
+  const { user } = await getAppContext();
+  return (
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pt-[env(safe-area-inset-top)]">
+      <header className="flex h-14 items-center">
+        <Link href="/today" aria-label="Back" className="-ml-3 flex size-11 items-center justify-center rounded-full text-text-secondary">
+          <ChevronLeft className="size-6" aria-hidden />
+        </Link>
+      </header>
+      <h1 className="pb-6 text-2xl font-semibold text-text-primary">Settings</h1>
+      <dl className="flex flex-col divide-y divide-border-subtle border-y border-border-subtle text-[15px]">
+        <div className="flex items-center justify-between py-4">
+          <dt className="text-text-secondary">Email</dt>
+          <dd className="text-text-primary">{user.email}</dd>
+        </div>
+        <div className="flex items-center justify-between py-4">
+          <dt className="text-text-secondary">Weight unit</dt>
+          <dd className="text-text-primary">lb</dd>
+        </div>
+        <div className="flex items-center justify-between py-4">
+          <dt className="text-text-secondary">Version</dt>
+          <dd className="text-text-primary tabular-nums">{packageJson.version}</dd>
+        </div>
+      </dl>
+      <form action={signOut} className="pt-8">
+        <Button type="submit" variant="destructive" size="touch" className="w-full">Sign out</Button>
+      </form>
+    </main>
+  );
+}
