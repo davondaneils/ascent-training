@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export type LoginState =
+  | { step: "password"; error?: string }
   | { step: "email"; error?: string }
   | { step: "code"; email: string; error?: string };
 
@@ -26,6 +27,22 @@ function isAllowed(email: string): boolean {
   const allowed = process.env.ALLOWED_EMAIL?.trim().toLowerCase();
   // With no ALLOWED_EMAIL configured, Supabase itself (signups disabled) is the gate.
   return !allowed || allowed === email;
+}
+
+/** Primary sign-in: email + password. Works everywhere, including the installed iPhone app. */
+export async function signInWithPassword(_prev: LoginState, form: FormData): Promise<LoginState> {
+  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const password = String(form.get("password") ?? "");
+  if (!email.includes("@") || password.length === 0) return { step: "password", error: "Enter your email and password." };
+  if (!isAllowed(email)) return { step: "password", error: "Email or password is incorrect." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    if (error.status === 429) return { step: "password", error: "Too many attempts. Try again in a few minutes." };
+    return { step: "password", error: "Email or password is incorrect." };
+  }
+  redirect("/today");
 }
 
 export async function sendCode(_prev: LoginState, form: FormData): Promise<LoginState> {

@@ -4,36 +4,64 @@ import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { sendCode, verifyCode, type LoginState } from "./actions";
+import { sendCode, signInWithPassword, verifyCode, type LoginState } from "./actions";
 
 async function loginAction(prev: LoginState, form: FormData): Promise<LoginState> {
-  if (form.get("intent") === "restart") return { step: "email" };
+  const intent = form.get("intent");
+  if (intent === "use-password") return { step: "password" };
+  if (intent === "use-link") return { step: "email" };
+  if (prev.step === "password") return signInWithPassword(prev, form);
   return prev.step === "email" ? sendCode(prev, form) : verifyCode(prev, form);
 }
 
+const inputClass = "h-12 rounded-[14px] px-4 text-base";
+
+function EmailField() {
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor="email" className="text-text-secondary">Email</Label>
+      <Input id="email" name="email" type="email" inputMode="email" autoComplete="username" autoCapitalize="none" required className={inputClass} />
+    </div>
+  );
+}
+
+function Switch({ intent, children }: { intent: string; children: React.ReactNode }) {
+  return (
+    <Button type="submit" name="intent" value={intent} variant="ghost" size="touch" formNoValidate>
+      {children}
+    </Button>
+  );
+}
+
 export function LoginForm() {
-  const [state, action, pending] = useActionState(loginAction, { step: "email" } as LoginState);
+  const [state, action, pending] = useActionState(loginAction, { step: "password" } as LoginState);
+
+  if (state.step === "password") {
+    return (
+      <form action={action} className="flex flex-col gap-4">
+        <EmailField />
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="password" className="text-text-secondary">Password</Label>
+          <Input id="password" name="password" type="password" autoComplete="current-password" required className={inputClass} />
+        </div>
+        {state.error && <p role="alert" className="text-sm text-danger">{state.error}</p>}
+        <Button type="submit" size="xl" disabled={pending}>
+          {pending ? "Signing in…" : "Sign in"}
+        </Button>
+        <Switch intent="use-link">Email me a sign-in link instead</Switch>
+      </form>
+    );
+  }
 
   if (state.step === "email") {
     return (
       <form action={action} className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="email" className="text-text-secondary">Email</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            autoCapitalize="none"
-            required
-            className="h-12 rounded-[14px] px-4 text-base"
-          />
-        </div>
+        <EmailField />
         {state.error && <p role="alert" className="text-sm text-danger">{state.error}</p>}
         <Button type="submit" size="xl" disabled={pending}>
-          {pending ? "Sending…" : "Send code"}
+          {pending ? "Sending…" : "Send link"}
         </Button>
+        <Switch intent="use-password">Use password instead</Switch>
       </form>
     );
   }
@@ -42,7 +70,8 @@ export function LoginForm() {
     <form action={action} className="flex flex-col gap-4">
       <input type="hidden" name="email" value={state.email} />
       <p className="text-[15px] text-text-secondary">
-        We sent a code to <span className="text-text-primary">{state.email}</span>. You can also tap the link in the email.
+        We sent a sign-in email to <span className="text-text-primary">{state.email}</span>. Open the link on this device, or
+        enter the code if the email has one.
       </p>
       <div className="flex flex-col gap-2">
         <Label htmlFor="code" className="text-text-secondary">Code</Label>
@@ -54,7 +83,6 @@ export function LoginForm() {
           pattern="[0-9]*"
           maxLength={10}
           required
-          autoFocus
           className="h-14 rounded-[14px] px-4 text-center text-2xl tracking-[0.3em] tabular-nums"
         />
       </div>
@@ -62,9 +90,7 @@ export function LoginForm() {
       <Button type="submit" size="xl" disabled={pending}>
         {pending ? "Checking…" : "Sign in"}
       </Button>
-      <Button type="submit" name="intent" value="restart" variant="ghost" size="touch" formNoValidate>
-        Use a different email
-      </Button>
+      <Switch intent="use-password">Use password instead</Switch>
     </form>
   );
 }

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getAppContext } from "@/lib/data/context";
 import packageJson from "@/package.json";
 import { signOut } from "./actions";
+import { PasswordForm } from "./password-form";
 import { SignOutButton } from "./sign-out-button";
 
 export default async function SettingsPage() {
@@ -29,6 +30,11 @@ export default async function SettingsPage() {
           <dd className="text-text-primary tabular-nums">{packageJson.version}</dd>
         </div>
       </dl>
+      <section className="flex flex-col gap-3 pt-8">
+        <h2 className="type-subheading">Password</h2>
+        <p className="text-[15px] text-text-secondary">Sign in with your email and this password on any device, including the installed app.</p>
+        <PasswordForm />
+      </section>
       <p className="pt-6 type-meta font-normal text-text-tertiary">
         Exercise illustrations ©{" "}
         <a href="https://github.com/everkinetic/data" className="underline underline-offset-2">Everkinetic</a>, licensed{" "}

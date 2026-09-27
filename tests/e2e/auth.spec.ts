@@ -14,13 +14,26 @@ test.describe("auth", () => {
     await context.close();
   });
 
-  test("the sign-in form moves to the code step", async ({ browser }) => {
+  test("password sign-in rejects a wrong password", async ({ browser }) => {
     const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
     const page = await context.newPage();
     await page.goto("/login");
+    await page.getByLabel("Email").fill("not-allowed@example.com");
+    await page.getByLabel("Password").fill("definitely-wrong");
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await expect(page.getByRole("alert")).toHaveText("Email or password is incorrect.");
+    await expect(page).toHaveURL(/\/login$/);
+    await context.close();
+  });
+
+  test("the email-link fallback moves to the code step", async ({ browser }) => {
+    const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+    const page = await context.newPage();
+    await page.goto("/login");
+    await page.getByRole("button", { name: "Email me a sign-in link instead" }).click();
     // Not the allowed address: the app responds identically but sends nothing.
     await page.getByLabel("Email").fill("not-allowed@example.com");
-    await page.getByRole("button", { name: "Send code" }).click();
+    await page.getByRole("button", { name: "Send link" }).click();
     await expect(page.getByLabel("Code")).toBeVisible();
     await expect(page.getByLabel("Code")).toHaveAttribute("inputmode", "numeric");
     await context.close();
