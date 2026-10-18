@@ -12,7 +12,7 @@ Become physically capable, practically useful, calm under pressure, faithful to 
 - Each arc: concrete competence target, realistic civilian emergency, 13 escalating learning/practice/retest stages, and a Saturday week-13 assessment.
 - Mon-Sat: one Scripture/prayer assignment (30 min) plus one practical assignment (20-90 min) from the cycle-specific playbook (`lib/campaign/playbook.ts`, six concrete practices per cycle).
 - Sunday: no exercise or mission checklists. Worship, rest, family, hospitality, voluntary prayer and fasting as appropriate.
-- Physical training remains the existing evidence-based Phase 1 until another physical block is separately specified, tested, and deployed. Never jump abruptly to loaded hikes, swimming, running, or intense endurance.
+- Physical training starts with the existing evidence-based Phase 1. After week 12 it automatically moves to a repeatable 12-week maintenance wave (not a permanent week-12 deload), with established aerobic volume and scheduled deloads. This is an interim bridge, not a claim that the complete five-year physical progression is programmed. A separately designed and evaluated strength/endurance block should replace maintenance once ready. Never jump abruptly to loaded hikes, swimming, running, or intense endurance.
 - Assessments use observed results, a note stating evidence, and either `completed` or `needs_work`; never fabricate a survival probability or moral score.
 
 ## Mission domains

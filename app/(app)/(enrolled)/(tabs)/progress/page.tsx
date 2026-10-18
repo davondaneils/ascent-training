@@ -38,7 +38,7 @@ export default async function ProgressPage({ searchParams }: PageProps<"/progres
       data={data}
       startDate={enrollment!.startDate}
       today={today}
-      currentWeek={position.status === "active" ? position.week : null}
+      currentWeek={position.status === "active" ? position.absoluteWeek : null}
       lift={lift}
       rel={rel}
       basePath="/progress"

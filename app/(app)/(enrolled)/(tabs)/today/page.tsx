@@ -32,7 +32,7 @@ export default async function TodayPage() {
   if (today.status !== "active" || today.resolved.day.sessionType === "rest") return <TodayView {...base} />;
 
   const { resolved } = today;
-  const range = programWeekRange(enrollment!.startDate, resolved.week);
+  const range = programWeekRange(enrollment!.startDate, resolved.absoluteWeek);
   const [workout, cardioLogs, mobilityDone, completion, missionLogs] = await Promise.all([
     resolved.day.sessionType === "lifting"
       ? getWorkoutForDate(supabase, user.id, today.date, program.dayIds[resolved.dayOfWeek])

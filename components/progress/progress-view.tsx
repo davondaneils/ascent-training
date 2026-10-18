@@ -173,7 +173,7 @@ export function ProgressView({ block, data, startDate, today, currentWeek, lift,
         </dl>
         <div className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between">
-            <span className="type-meta text-text-tertiary">Block completion</span>
+            <span className="type-meta text-text-tertiary">Current training wave completion</span>
             <span className="type-meta tabular-nums text-text-secondary">{cons.blockPercent}%</span>
           </div>
           <Progress value={cons.blockPercent} aria-label="Block completion" className="h-1.5" />

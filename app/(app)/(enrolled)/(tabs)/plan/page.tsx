@@ -8,7 +8,7 @@ import { WeekStrip } from "@/components/plan/week-strip";
 import { shortWeekday, toLocalDate } from "@/lib/dates";
 import { getAppContext } from "@/lib/data/context";
 import { formatMinutes } from "@/lib/training/format";
-import { getCardio, programPosition } from "@/lib/training/schedule";
+import { getCardioForWave, programPosition } from "@/lib/training/schedule";
 
 export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
   const { program, enrollment } = await getAppContext();
@@ -17,6 +17,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
   const position = programPosition(block, enrollment!, today);
   const campaign = campaignPosition(enrollment!.startDate, today);
   const currentWeek = position.status === "active" ? position.week : null;
+  const wave = position.status === "active" ? position.wave : 1;
 
   const requested = Number((await searchParams).week);
   const selectedWeek =
@@ -27,7 +28,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
       <header className="flex flex-col gap-3">
         <h1 className="type-title">{block.name}</h1>
         <p className="text-[15px] text-text-secondary">
-          {currentWeek ? `Week ${currentWeek} of ${block.durationWeeks}` : `Starts ${enrollment!.startDate}`}
+          {currentWeek ? `${wave > 1 ? `Wave ${wave} · ` : ""}Week ${currentWeek} of ${block.durationWeeks}` : `Starts ${enrollment!.startDate}`}
         </p>
         <Progress
           value={currentWeek ? (currentWeek / block.durationWeeks) * 100 : 0}
@@ -52,7 +53,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
         </h2>
         <ul className="flex flex-col divide-y divide-border-subtle rounded-[20px] border border-border-subtle bg-surface">
           {block.days.map((d) => {
-            const cardio = d.dayOfWeek === 7 ? null : getCardio(block, selectedWeek, d.dayOfWeek);
+            const cardio = d.dayOfWeek === 7 ? null : getCardioForWave(block, selectedWeek, d.dayOfWeek, wave);
             return (
               <li key={d.dayOfWeek}>
                 <Link

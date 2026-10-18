@@ -34,7 +34,7 @@ export function TodayView({ block, exerciseIds, userId, today, workout, cardioLo
         {monthDay(today.date)}
         {today.status === "active" && (
           <>
-            {" · "}Week {today.resolved.week} of {block.durationWeeks}
+            {" · "}{today.resolved.wave > 1 ? `Wave ${today.resolved.wave} · ` : ""}Week {today.resolved.week} of {block.durationWeeks}
             {today.resolved.isDeload && " · Deload"}
           </>
         )}
