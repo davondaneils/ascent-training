@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CheckCircle2, CircleDot } from "lucide-react";
+import { Clock3, CircleDot } from "lucide-react";
 import { CAMPAIGN_CYCLES } from "@/lib/campaign/roadmap";
 import type { CampaignPosition } from "@/lib/campaign/schedule";
 
@@ -30,7 +30,7 @@ export function CampaignRoadmap({ position }: { position: CampaignPosition }) {
               const current = position.status === "active" && index === position.cycleIndex;
               return (
                 <div key={cycle.id} className="flex items-start gap-3 p-4">
-                  {past ? <CheckCircle2 className="mt-1 size-5 shrink-0 text-text-tertiary" aria-label="Time elapsed" /> :
+                  {past ? <Clock3 className="mt-1 size-5 shrink-0 text-text-tertiary" aria-label="Time elapsed" /> :
                     current ? <CircleDot className="mt-1 size-5 shrink-0 text-accent" aria-label="Current cycle" /> :
                       <span className="mt-1 flex size-5 shrink-0 items-center justify-center text-[12px] text-text-tertiary">{cycle.quarter}</span>}
                   <div className="flex flex-1 flex-col gap-2">

@@ -11,3 +11,11 @@ export type BenchmarkKey = (typeof BENCHMARKS)[number]["key"];
 export function getBenchmark(key: string) {
   return BENCHMARKS.find((benchmark) => benchmark.key === key) ?? null;
 }
+
+/** A legitimate baseline includes zero strict pull-ups. Other tests require positive results. */
+export function isValidBenchmarkValue(key: string, value: number): boolean {
+  const benchmark = getBenchmark(key);
+  if (!benchmark || !Number.isFinite(value) || value > benchmark.max) return false;
+  if (benchmark.key === "pullups_strict") return Number.isInteger(value) && value >= 0;
+  return value > 0;
+}

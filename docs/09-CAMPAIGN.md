@@ -10,7 +10,7 @@ Become physically capable, practically useful, calm under pressure, faithful to 
 
 - 5 calendar years, 4 x approximately 13-week cycles per year = 20 named arcs. Civil anniversary extra days stay in the fourth arc.
 - Each arc: concrete competence target, realistic civilian emergency, 13 escalating learning/practice/retest stages, and a Saturday week-13 assessment.
-- Mon-Sat: one Scripture/prayer assignment (30 min) plus one rotating practical assignment (20-90 min).
+- Mon-Sat: one Scripture/prayer assignment (30 min) plus one practical assignment (20-90 min) from the cycle-specific playbook (`lib/campaign/playbook.ts`, six concrete practices per cycle).
 - Sunday: no exercise or mission checklists. Worship, rest, family, hospitality, voluntary prayer and fasting as appropriate.
 - Physical training remains the existing evidence-based Phase 1 until another physical block is separately specified, tested, and deployed. Never jump abruptly to loaded hikes, swimming, running, or intense endurance.
 - Assessments use observed results, a note stating evidence, and either `completed` or `needs_work`; never fabricate a survival probability or moral score.

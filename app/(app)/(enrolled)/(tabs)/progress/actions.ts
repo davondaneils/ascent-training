@@ -2,16 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { serverNow } from "@/lib/clock";
-import { getBenchmark } from "@/lib/campaign/benchmarks";
+import { getBenchmark, isValidBenchmarkValue } from "@/lib/campaign/benchmarks";
 import { toLocalDate } from "@/lib/dates";
 import { getAppContext } from "@/lib/data/context";
 
 export async function recordCapabilityTest(input: { key: string; value: number }): Promise<void> {
   const test = getBenchmark(input.key);
-  if (!test || !Number.isFinite(input.value) || input.value <= 0 || input.value > test.max)
+  if (!test || !isValidBenchmarkValue(input.key, input.value))
     throw new Error("Enter a valid measured result for the selected test.");
-  if (test.key === "pullups_strict" && !Number.isInteger(input.value))
-    throw new Error("Pull-up count must be a whole number.");
   const { user, supabase, enrollment } = await getAppContext();
   if (!enrollment) throw new Error("Training enrollment not found.");
   const date = toLocalDate(await serverNow());

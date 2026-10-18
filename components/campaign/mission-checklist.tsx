@@ -79,7 +79,7 @@ export function MissionChecklist({ missions, initialLogs }: {
                   {mission.requiresEvidence ? (
                     <>
                       <button type="button" disabled={pending} onClick={() => submit(mission, "completed")}
-                        className="min-h-11 rounded-[12px] bg-accent px-4 text-[14px] font-medium text-white disabled:opacity-50">
+                        className="min-h-11 rounded-[12px] bg-accent px-4 text-[14px] font-medium text-accent-foreground disabled:opacity-50">
                         Met standard
                       </button>
                       <button type="button" disabled={pending} onClick={() => submit(mission, "needs_work")}

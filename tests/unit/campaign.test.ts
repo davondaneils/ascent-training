@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { addCalendarYears, campaignPosition, missionsForDate, scheduledMissionCount } from "@/lib/campaign/schedule";
 import { CAMPAIGN_CYCLES } from "@/lib/campaign/roadmap";
 import { PLAYBOOK } from "@/lib/campaign/playbook";
+import { isValidBenchmarkValue } from "@/lib/campaign/benchmarks";
 
 const start = "2026-09-28"; // Monday
 
@@ -28,6 +29,13 @@ describe("five-year campaign", () => {
     expect(campaignPosition(start, "2026-12-28").cycleIndex).toBe(1);
     expect(campaignPosition(start, "2027-09-28").year).toBe(2);
     expect(campaignPosition(start, "2031-09-27").cycleIndex).toBe(19);
+  });
+  it("accepts honest zero pull-up baselines while rejecting fabricated and invalid values", () => {
+    expect(isValidBenchmarkValue("pullups_strict", 0)).toBe(true);
+    expect(isValidBenchmarkValue("pullups_strict", 2.5)).toBe(false);
+    expect(isValidBenchmarkValue("run_5k_minutes", 0)).toBe(false);
+    expect(isValidBenchmarkValue("run_5k_minutes", 25.3)).toBe(true);
+    expect(isValidBenchmarkValue("not-real", 1)).toBe(false);
   });
   it("schedules two missions Mon-Sat with a Sunday of rest", () => {
     expect(missionsForDate(start, "2026-09-28")).toHaveLength(2);

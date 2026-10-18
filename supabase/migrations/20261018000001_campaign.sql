@@ -22,7 +22,10 @@ create table public.capability_tests (
   test_key text not null check (test_key in (
     'run_5k_minutes', 'pullups_strict', 'loaded_hike_15kg_km', 'swim_continuous_m', 'carry_20kg_m'
   )),
-  value numeric not null check (value > 0),
+  value numeric not null check (
+    (test_key = 'pullups_strict' and value >= 0 and value = floor(value))
+    or (test_key <> 'pullups_strict' and value > 0)
+  ),
   tested_on date not null,
   created_at timestamptz not null default now()
 );

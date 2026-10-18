@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { BENCHMARKS, type BenchmarkKey } from "@/lib/campaign/benchmarks";
+import { BENCHMARKS, isValidBenchmarkValue, type BenchmarkKey } from "@/lib/campaign/benchmarks";
 import type { CampaignPosition } from "@/lib/campaign/schedule";
 import type { CapabilityTest } from "@/lib/data/campaign";
 import { recordCapabilityTest } from "@/app/(app)/(enrolled)/(tabs)/progress/actions";
@@ -30,10 +30,7 @@ export function CampaignProgress({ position, completedThisWeek, scheduledThisWee
   const [success, setSuccess] = useState<string | null>(null);
   const selected = BENCHMARKS.find((test) => test.key === key)!;
   const canRecord = position.status !== "before_start" && !pending &&
-    value.trim() !== "" && Number.isFinite(Number(value)) &&
-    Number(value) >= (selected.key === "pullups_strict" ? 0 : Number.EPSILON) &&
-    Number(value) <= selected.max &&
-    (selected.key !== "pullups_strict" || Number.isInteger(Number(value)));
+    value.trim() !== "" && isValidBenchmarkValue(key, Number(value));
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
