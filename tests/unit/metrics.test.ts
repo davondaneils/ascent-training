@@ -93,7 +93,7 @@ describe("cardio", () => {
   it("shows only the latest 12 weeks, without merging later waves into week 12", () => {
     const logs = [
       { date: "2026-09-28", actualMinutes: 20, rpe: 2 },
-      { date: "2026-12-28", actualMinutes: 60, rpe: 3 },
+      { date: "2026-12-21", actualMinutes: 60, rpe: 3 },
     ];
     const points = weeklyAerobicMinutes(logs, PHASE_1, "2026-09-28", 13);
     expect(points).toHaveLength(12);
@@ -141,9 +141,9 @@ describe("consistency", () => {
 
   it("counts the current training wave rather than accumulating only the first 12 weeks", () => {
     const c = consistency({
-      block: PHASE_1, startDate: "2026-09-28", today: "2026-12-28",
-      completedLiftingDates: ["2026-09-28", "2026-12-28"],
-      cardioDates: ["2026-09-28", "2026-12-28"],
+      block: PHASE_1, startDate: "2026-09-28", today: "2026-12-21",
+      completedLiftingDates: ["2026-09-28", "2026-12-21"],
+      cardioDates: ["2026-09-28", "2026-12-21"],
     });
     expect(c.lifting).toEqual({ done: 1, scheduled: 1 });
     expect(c.cardio).toEqual({ done: 1, scheduled: 1 });
