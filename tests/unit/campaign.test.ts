@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { addCalendarYears, campaignPosition, missionsForDate, scheduledMissionCount } from "@/lib/campaign/schedule";
 import { CAMPAIGN_CYCLES } from "@/lib/campaign/roadmap";
+import { PLAYBOOK } from "@/lib/campaign/playbook";
 
 const start = "2026-09-28"; // Monday
 
@@ -9,6 +10,11 @@ describe("five-year campaign", () => {
     expect(CAMPAIGN_CYCLES).toHaveLength(20);
     expect(new Set(CAMPAIGN_CYCLES.map((c) => c.id)).size).toBe(20);
     expect(CAMPAIGN_CYCLES[19].year).toBe(5);
+    expect(Object.keys(PLAYBOOK)).toHaveLength(20);
+    for (const cycle of CAMPAIGN_CYCLES) {
+      expect(PLAYBOOK[cycle.id]).toHaveLength(6);
+      expect(PLAYBOOK[cycle.id].every((practice) => practice.standard.length > 10)).toBe(true);
+    }
   });
   it("calculates civil anniversaries without DST drift", () => {
     expect(addCalendarYears("2026-09-28", 5)).toBe("2031-09-28");

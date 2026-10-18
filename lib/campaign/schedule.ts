@@ -1,6 +1,7 @@
 import { addDays, dayOfWeek, daysBetween } from "@/lib/dates";
 import type { LocalDate } from "@/lib/training/types";
 import { CAMPAIGN_CYCLES, WEEK_STAGES, type CampaignCycle } from "./roadmap";
+import { PLAYBOOK } from "./playbook";
 
 export type MissionDomain = "faith" | "medical" | "navigation" | "household" | "mind" | "service" | "field";
 export type MissionOutcome = "completed" | "needs_work";
@@ -81,15 +82,6 @@ const SCRIPTURE = [
   { passage: "John 15:9-17", theme: "Sacrificial love" },
 ] as const;
 
-const DAY_ASSIGNMENT: Record<number, { domain: MissionDomain; title: string; action: string; success: string; minutes: number }> = {
-  1: { domain: "household", title: "Find the weak point", action: "Audit one concrete gap; write who it affects, what fails, and your next corrective step.", success: "A written gap and one practical action with an owner.", minutes: 20 },
-  2: { domain: "medical", title: "Practice a useful skill", action: "Study an accredited safety resource or rehearse a safe skill with qualified guidance. Do not improvise treatment.", success: "Identify the skill, reputable source, and what you can actually demonstrate.", minutes: 30 },
-  3: { domain: "mind", title: "Calm under uncertainty", action: "Run a tabletop decision: identify facts, unknowns, safe alternatives, and who needs help. Practice speaking calmly.", success: "Write a three-step decision and one nonviolent de-escalation phrase.", minutes: 20 },
-  4: { domain: "navigation", title: "Build the contingency", action: "Practice safe route planning, redundant communications, or equipment checks relevant to the cycle.", success: "A documented route, check, or working fallback plan.", minutes: 30 },
-  5: { domain: "service", title: "Serve without reward", action: "Give practical help to a relative, neighbor, church, or community group. Ask what is actually needed.", success: "One completed act of meaningful help, not merely an intention.", minutes: 30 },
-  6: { domain: "field", title: "Field rehearsal", action: "Conduct a safe daylight drill or household tabletop simulation. No confrontation, unsafe exposure, or unnecessary risk.", success: "Record what worked, what failed, and your next adjustment.", minutes: 60 },
-};
-
 export function missionsForDate(startDate: LocalDate, date: LocalDate): Mission[] {
   const position = campaignPosition(startDate, date);
   if (position.status !== "active") return [];
@@ -104,7 +96,8 @@ export function missionsForDate(startDate: LocalDate, date: LocalDate): Mission[
     stakes: "Faithful conviction must endure fear without turning into hatred.",
     success: "Read, pray, and write one honest sentence.", minutes: 30, requiresEvidence: false,
   };
-  const daily = DAY_ASSIGNMENT[dow];
+  const daily = PLAYBOOK[position.cycle.id]?.[dow - 1];
+  if (!daily) throw new Error(`Missing campaign practice: ${position.cycle.id}, day ${dow}`);
   const crucible = dow === 6 && position.weekInCycle === 13;
   const mission: Mission = {
     id: "practice:" + date, date, domain: daily.domain,
@@ -118,7 +111,7 @@ export function missionsForDate(startDate: LocalDate, date: LocalDate): Mission[
       " Could you respond with competence, calm, and care?",
     success: crucible
       ? "Record observable evidence and whether you met the standard or need more work."
-      : daily.success + " Long-term target: " + position.cycle.capability + ".",
+      : daily.standard + " Long-term target: " + position.cycle.capability + ".",
     minutes: crucible ? 90 : daily.minutes,
     requiresEvidence: crucible,
   };
