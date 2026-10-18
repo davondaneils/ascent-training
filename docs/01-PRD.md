@@ -443,3 +443,9 @@ Do not add features simply because a fitness app “usually has them.”
 The V1 quality bar is:
 
 > effortless daily execution of the prescribed plan.
+
+---
+
+## Post-V1 extension: Five Years to Prepare (October 2026)
+
+V1 exclusions and the original 12-week training requirements above describe **the shipped base training instrument**, not permanent product limitations. The separate civilian Christian-readiness extension is specified in [`09-CAMPAIGN.md`](09-CAMPAIGN.md), with cycle-specific missions, Sunday worship/rest, observed benchmarks, and a 20-cycle, five-year scenario curriculum. It preserves the original lifting experience and adds an interim rolling 12-week maintenance wave after Phase 1. The complete subsequent physical programming remains a separately scoped requirement rather than an invented schedule. New non-gym mission completion currently requires a connection; existing offline workout logging is unchanged.

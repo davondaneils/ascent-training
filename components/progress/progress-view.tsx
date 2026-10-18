@@ -73,7 +73,7 @@ export function ProgressView({ block, data, startDate, today, currentWeek, lift,
 
   return (
     <div className="flex flex-col gap-5 pt-2">
-      <h1 className="type-title">Progress</h1>
+      <h2 className="type-heading">Physical performance</h2>
       {nothingYet && (
         <p className="type-body text-text-secondary">Your trends appear here after you complete workouts and cardio.</p>
       )}

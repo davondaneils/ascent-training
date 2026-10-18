@@ -107,7 +107,7 @@ export function missionsForDate(startDate: LocalDate, date: LocalDate): Mission[
         " Use a supervised, civilian, non-confrontational exercise. Stop if conditions are unsafe."
       : "Cycle focus: " + position.cycle.focus + ". Week " + position.weekInCycle + ": " +
         position.stage + ". " + daily.action,
-    stakes: "If " + position.cycle.scenario.charAt(0).toLowerCase() + position.cycle.scenario.slice(1) +
+    stakes: "Scenario: " + position.cycle.scenario +
       " Could you respond with competence, calm, and care?",
     success: crucible
       ? "Record observable evidence and whether you met the standard or need more work."

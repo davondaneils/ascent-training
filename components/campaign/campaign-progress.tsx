@@ -52,7 +52,7 @@ export function CampaignProgress({ position, completedThisWeek, scheduledThisWee
     <section className="flex flex-col gap-5 pt-2" aria-label="Campaign capability">
       <div className="flex flex-col gap-2">
         <p className="type-meta text-text-tertiary">FIVE YEARS TO PREPARE · YEAR {position.year} OF 5</p>
-        <h2 className="type-title">Readiness</h2>
+        <h1 className="type-title">Progress</h1>
         <p className="type-body text-text-secondary">
           Real performance, demonstrated competence, and service. No invented readiness score.
         </p>

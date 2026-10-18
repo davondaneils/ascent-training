@@ -15,7 +15,7 @@ export function CampaignBrief({ position, restful = false }: { position: Campaig
             Cycle {position.cycleNumber} of 20 · Week {position.weekInCycle} of 13 · {position.stage}
           </p>
           <p className="text-[14px] leading-relaxed text-text-secondary">
-            Scenario: {position.cycle.scenario}
+            If religious persecution or civil disorder reached your community, could you protect life, stay faithful, and help others? This cycle rehearses: {position.cycle.scenario}
           </p>
         </>
       )}
