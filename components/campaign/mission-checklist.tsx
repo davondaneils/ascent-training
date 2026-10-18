@@ -33,7 +33,7 @@ export function MissionChecklist({ missions, initialLogs }: {
   return (
     <section className="flex flex-col gap-4" aria-label="Today&apos;s missions">
       <div className="flex flex-col gap-1 px-1">
-        <h2 className="type-heading">Today's missions</h2>
+        <h2 className="type-heading">Today&apos;s missions</h2>
         <p className="type-meta font-normal text-text-secondary">Complete the work, not just the checkbox.</p>
       </div>
       <div className="divide-y divide-border-subtle rounded-[20px] border border-border-subtle bg-surface">
