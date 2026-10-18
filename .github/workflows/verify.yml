@@ -14,6 +14,9 @@ jobs:
         with:
           node-version: '24'
           cache: npm
+      # The inherited lockfile is missing two optional @emnapi dependencies under Node 24.
+      # Reconcile it in the ephemeral runner until a refreshed lockfile is committed.
+      - run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
