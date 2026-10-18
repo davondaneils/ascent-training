@@ -39,7 +39,7 @@
 
 ## Automated verification
 
-`Verify Ascent` CI runs Node 24 TypeScript typecheck, ESLint, and Vitest. The workflow reconciles two inherited missing optional dependency lockfile entries in its temporary runner before `npm ci`; this does not commit those changes and should eventually be replaced by refreshing the repository lockfile. E2E campaign tests require an isolated Supabase instance with the new migration applied; they are not part of PR CI.
+`Verify Ascent` CI runs Node 24 TypeScript typecheck, ESLint, and Vitest. Two missing optional @emnapi dependency entries were restored in the committed package lockfile, so CI uses a reproducible `npm ci` without a temporary reconciliation. E2E campaign tests require an isolated Supabase instance with the new migration applied; they are not part of PR CI.
 
 ## Deployment gate
 

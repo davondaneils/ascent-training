@@ -14,12 +14,6 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-      # The inherited lockfile is missing two optional @emnapi dependencies under Node 24.
-      # Reconcile it in the ephemeral runner until a refreshed lockfile is committed.
-      - run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-      - name: Print lockfile package metadata for remediation
-        run: |
-          node -e 'const p=require("./package-lock.json").packages; for(const k of ["node_modules/@emnapi/runtime","node_modules/@emnapi/core"]) console.log("LOCKFIX",k,JSON.stringify(p[k]))'
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
