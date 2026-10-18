@@ -1,4 +1,6 @@
 import { ChevronRight } from "lucide-react";
+import { CampaignBrief } from "@/components/campaign/campaign-brief";
+import { campaignPosition } from "@/lib/campaign/schedule";
 import { serverNow } from "@/lib/clock";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
@@ -11,7 +13,9 @@ import { getCardio, programPosition } from "@/lib/training/schedule";
 export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
   const { program, enrollment } = await getAppContext();
   const { block } = program;
-  const position = programPosition(block, enrollment!, toLocalDate(await serverNow()));
+  const today = toLocalDate(await serverNow());
+  const position = programPosition(block, enrollment!, today);
+  const campaign = campaignPosition(enrollment!.startDate, today);
   const currentWeek = position.status === "active" ? position.week : null;
 
   const requested = Number((await searchParams).week);
@@ -31,6 +35,8 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
           className="h-1.5"
         />
       </header>
+
+      <CampaignBrief position={campaign} />
 
       <WeekStrip
         weeks={block.durationWeeks}

@@ -1,4 +1,7 @@
 import { Moon } from "lucide-react";
+import { CampaignBrief } from "@/components/campaign/campaign-brief";
+import { MissionChecklist } from "@/components/campaign/mission-checklist";
+import type { CampaignPosition, Mission, MissionLog } from "@/lib/campaign/schedule";
 import { monthDay, weekdayName } from "@/lib/dates";
 import type { CardioLogSummary, WorkoutStatus } from "@/lib/data/today";
 import { formatPrescription } from "@/lib/training/format";
@@ -19,10 +22,11 @@ export interface TodayData {
   mobilityDone: string[];
   completion: { lifting: number; cardio: number };
   scheduled: { lifting: number; cardio: number };
+  campaign?: { position: CampaignPosition; missions: Mission[]; logs: MissionLog[] };
 }
 
 /** Presentational Today screen: all four states (lifting day, Saturday, Sunday, before start). */
-export function TodayView({ block, exerciseIds, userId, today, workout, cardioLogs, mobilityDone, completion, scheduled }: TodayData) {
+export function TodayView({ block, exerciseIds, userId, today, workout, cardioLogs, mobilityDone, completion, scheduled, campaign }: TodayData) {
   const header = (
     <div className="flex flex-col gap-1 pt-2">
       <h1 className="type-title">{weekdayName(today.date)}</h1>
@@ -66,10 +70,10 @@ export function TodayView({ block, exerciseIds, userId, today, workout, cardioLo
           <Moon className="size-7 text-text-tertiary" strokeWidth={1.5} aria-hidden />
           <h2 className="type-title">Rest · Fast</h2>
           <p className="text-[17px] leading-relaxed text-text-secondary">
-            No training today.
-            <br />
-            Resume Monday.
+            No physical training today. Worship, Scripture, family, hospitality, and recovery.
+            Fasting is voluntary and should not compromise your health.
           </p>
+          {campaign && <CampaignBrief position={campaign.position} restful />}
         </section>
       </div>
     );
@@ -80,6 +84,8 @@ export function TodayView({ block, exerciseIds, userId, today, workout, cardioLo
   return (
     <div className="flex flex-col gap-5">
       {header}
+
+      {campaign && <CampaignBrief position={campaign.position} />}
 
       {day.sessionType === "lifting" && (
         <WorkoutCard
@@ -110,6 +116,8 @@ export function TodayView({ block, exerciseIds, userId, today, workout, cardioLo
           }))}
         />
       )}
+
+      {campaign && <MissionChecklist missions={campaign.missions} initialLogs={campaign.logs} />}
 
       <div className="pt-3">
         <WeekSummary

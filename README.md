@@ -45,6 +45,10 @@ Sign in, pick the Phase 1 start date (it defaults to next Monday), and you're in
 
 ---
 
+## Five-year civilian readiness campaign (new)
+
+The optional Christian-readiness extension lives in `docs/09-CAMPAIGN.md`. It adds a 20-cycle, five-year hypothetical-scenario curriculum, scripted missions, measurable assessments, and a Sunday for worship and rest. The current gym programming stays intact. Deploy **only after** applying `supabase/migrations/20261018000001_campaign.sql` to the existing database. On the usual local setup, `npm run db:push` applies this migration. Otherwise, run it with the Supabase SQL editor after review. Neither creating a PR nor merging it runs migrations automatically.
+
 ## Deploying to Vercel
 
 1. Push the repo to GitHub.
