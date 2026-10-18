@@ -2,6 +2,7 @@
 
 import { addDays, dayOfWeek, daysBetween } from "@/lib/dates";
 import { completedSets } from "@/lib/progression/reference";
+import { getCardioForWave } from "./schedule";
 import type { ExercisePerformance, LocalDate, ProgramBlock } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -185,7 +186,7 @@ export function consistency(input: {
     const week = Math.floor(i / 7) + 1;
     const dow = dayOfWeek(addDays(startDate, i)); // program days follow the calendar
     const lifts = liftingDays.has(dow) ? 1 : 0;
-    const cardio = block.cardio.some((c) => c.weekNumber === week && c.dayOfWeek === dow) ? 1 : 0;
+    const cardio = getCardioForWave(block, week, dow, wave + 1) ? 1 : 0;
     liftingTotal += lifts;
     cardioTotal += cardio;
     if (i < elapsed) {

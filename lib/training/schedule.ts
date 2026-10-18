@@ -131,10 +131,10 @@ export function programWeekRange(startDate: LocalDate, week: number): { from: Lo
 }
 
 /** Scheduled sessions in a program week, for "2 / 5 lifting · 1 / 4 cardio". */
-export function scheduledCounts(block: ProgramBlock, week: number): { lifting: number; cardio: number } {
+export function scheduledCounts(block: ProgramBlock, week: number, wave = 1): { lifting: number; cardio: number } {
   return {
     lifting: block.days.filter((d) => d.sessionType === "lifting").length,
-    cardio: block.cardio.filter((c) => c.weekNumber === week && c.dayOfWeek !== 7).length,
+    cardio: block.days.filter((d) => getCardioForWave(block, week, d.dayOfWeek, wave) !== null).length,
   };
 }
 

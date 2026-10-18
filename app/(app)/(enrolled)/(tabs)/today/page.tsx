@@ -50,7 +50,7 @@ export default async function TodayPage() {
       cardioLogs={cardioLogs}
       mobilityDone={[...mobilityDone]}
       completion={completion}
-      scheduled={scheduledCounts(block, resolved.week)}
+      scheduled={scheduledCounts(block, resolved.week, resolved.wave)}
       campaign={{ ...base.campaign, logs: missionLogs }}
     />
   );

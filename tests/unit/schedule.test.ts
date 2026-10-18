@@ -93,6 +93,7 @@ describe("program week", () => {
     expect(pos.absoluteWeek).toBe(13);
     expect(pos.wave).toBe(2);
     expect(pos.isDeload).toBe(false);
+    expect(scheduledCounts(PHASE_1, 1, 2).cardio).toBe(6);
     const today = resolveToday(PHASE_1, enrollment, new Date(addDays(START, 84) + "T12:00:00Z"));
     expect(today.status).toBe("active");
     if (today.status === "active") {
