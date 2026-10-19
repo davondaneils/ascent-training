@@ -12,9 +12,9 @@ import {
 import { programWeekRange, resolveToday, scheduledCounts } from "@/lib/training/schedule";
 
 export default async function TodayPage() {
-  const { user, supabase, program, enrollment } = await getAppContext();
+  const { user, supabase, program, enrollment, trainingEnrollment } = await getAppContext();
   const { block } = program;
-  const today = resolveToday(block, enrollment!, await serverNow());
+  const today = resolveToday(block, trainingEnrollment!, await serverNow());
   const campaign = campaignPosition(enrollment!.startDate, today.date);
 
   const base = {
@@ -32,7 +32,7 @@ export default async function TodayPage() {
   if (today.status !== "active" || today.resolved.day.sessionType === "rest") return <TodayView {...base} />;
 
   const { resolved } = today;
-  const range = programWeekRange(enrollment!.startDate, resolved.absoluteWeek);
+  const range = programWeekRange(trainingEnrollment!.startDate, resolved.absoluteWeek);
   const [workout, cardioLogs, mobilityDone, completion, missionLogs] = await Promise.all([
     resolved.day.sessionType === "lifting"
       ? getWorkoutForDate(supabase, user.id, today.date, program.dayIds[resolved.dayOfWeek])

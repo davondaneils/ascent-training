@@ -6,7 +6,10 @@ import type { CardioLogSummary } from "@/lib/data/today";
 import { formatMinutes } from "@/lib/training/format";
 import type { CardioPrescription } from "@/lib/training/types";
 
-const MODALITY: Record<CardioPrescription["modality"], string> = { bike: "Bike", incline_walk: "Incline walk" };
+const MODALITY: Record<CardioPrescription["modality"], string> = {
+  bike: "Bike", incline_walk: "Incline walk", run_walk: "Run / walk", run: "Easy run",
+  swim: "Supervised swim", hike: "Long walk / hike", loaded_hike: "Progressive pack hike",
+};
 
 interface Props {
   cardio: CardioPrescription;
@@ -22,12 +25,12 @@ export function CardioCard({ cardio, date, primary, logs }: Props) {
   return (
     <Card className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <Eyebrow>{primary ? "Long easy aerobic" : "Later today"}</Eyebrow>
+        <Eyebrow>{primary ? "Endurance / movement" : "Later today"}</Eyebrow>
         <h2 className={primary ? "type-heading" : "type-subheading"}>
           {MODALITY[cardio.modality]} · {target}
         </h2>
         <p className="type-body text-text-secondary">
-          Easy · RPE {cardio.targetRpeMin}–{cardio.targetRpeMax}
+          RPE {cardio.targetRpeMin}–{cardio.targetRpeMax} · Choose a safe alternative if needed
         </p>
       </div>
       {done ? (

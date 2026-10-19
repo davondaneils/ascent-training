@@ -10,10 +10,10 @@ import { STRENGTH_LIFTS, loadProgressData } from "@/lib/data/progress";
 import { programPosition } from "@/lib/training/schedule";
 
 export default async function ProgressPage({ searchParams }: PageProps<"/progress">) {
-  const { user, supabase, program, enrollment } = await getAppContext();
+  const { user, supabase, program, enrollment, trainingEnrollment } = await getAppContext();
   const sp = await searchParams;
   const today = toLocalDate(await serverNow());
-  const position = programPosition(program.block, enrollment!, today);
+  const position = programPosition(program.block, trainingEnrollment!, today);
   const weekStart = startOfWeek(today);
   const [data, missionLogs, capabilityTests] = await Promise.all([
     loadProgressData(supabase, program, user.id),
@@ -36,7 +36,7 @@ export default async function ProgressPage({ searchParams }: PageProps<"/progres
     <ProgressView
       block={program.block}
       data={data}
-      startDate={enrollment!.startDate}
+      startDate={trainingEnrollment!.startDate}
       today={today}
       currentWeek={position.status === "active" ? position.absoluteWeek : null}
       lift={lift}

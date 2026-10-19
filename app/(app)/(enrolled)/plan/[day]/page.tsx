@@ -6,16 +6,16 @@ import { toLocalDate } from "@/lib/dates";
 import { getAppContext } from "@/lib/data/context";
 import { applyDeload, isDeloadWeek } from "@/lib/training/deload";
 import { formatMinutes, formatPrescription, formatRest } from "@/lib/training/format";
-import { getCardio, programPosition } from "@/lib/training/schedule";
+import { getCardioForWave, programPosition } from "@/lib/training/schedule";
 import type { DayOfWeek, Prescription } from "@/lib/training/types";
 
 export default async function PlanDayPage({ params, searchParams }: PageProps<"/plan/[day]">) {
-  const { program, enrollment } = await getAppContext();
+  const { program, trainingEnrollment } = await getAppContext();
   const { block } = program;
   const dow = Number((await params).day);
   if (!Number.isInteger(dow) || dow < 1 || dow > 7) notFound();
 
-  const position = programPosition(block, enrollment!, toLocalDate(await serverNow()));
+  const position = programPosition(block, trainingEnrollment!, toLocalDate(await serverNow()));
   const requested = Number((await searchParams).week);
   const week =
     Number.isInteger(requested) && requested >= 1 && requested <= block.durationWeeks
@@ -25,7 +25,7 @@ export default async function PlanDayPage({ params, searchParams }: PageProps<"/
   const day = block.days.find((d) => d.dayOfWeek === dow)!;
   const deload = isDeloadWeek(block, week);
   const prescriptions = day.prescriptions.map((p) => (deload ? applyDeload(p) : p));
-  const cardio = dow === 7 ? null : getCardio(block, week, dow as DayOfWeek);
+  const cardio = dow === 7 ? null : getCardioForWave(block, week, dow as DayOfWeek, position.status === "active" ? position.wave : 1);
   const name = (slug: string) => block.exercises.find((e) => e.slug === slug)?.name ?? slug;
 
   const sections: { title: string; items: Prescription[] }[] = [
@@ -83,7 +83,7 @@ export default async function PlanDayPage({ params, searchParams }: PageProps<"/
           <h2 className="px-1 text-[13px] font-medium text-text-tertiary">Cardio</h2>
           <div className="rounded-[20px] border border-border-subtle bg-surface px-4 py-3">
             <div className="flex items-baseline justify-between">
-              <span className="text-[15px]">Bike</span>
+              <span className="text-[15px]">{cardio.modality.replace(/_/g, " ")}</span>
               <span className="text-[15px] tabular-nums text-text-secondary">
                 {formatMinutes(cardio.targetMinutes, cardio.targetMinutesMax)}
               </span>

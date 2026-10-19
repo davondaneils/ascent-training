@@ -11,10 +11,10 @@ import { formatMinutes } from "@/lib/training/format";
 import { getCardioForWave, programPosition } from "@/lib/training/schedule";
 
 export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
-  const { program, enrollment } = await getAppContext();
+  const { program, enrollment, trainingEnrollment } = await getAppContext();
   const { block } = program;
   const today = toLocalDate(await serverNow());
-  const position = programPosition(block, enrollment!, today);
+  const position = programPosition(block, trainingEnrollment!, today);
   const campaign = campaignPosition(enrollment!.startDate, today);
   const currentWeek = position.status === "active" ? position.week : null;
   const wave = position.status === "active" ? position.wave : 1;
@@ -28,7 +28,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
       <header className="flex flex-col gap-3">
         <h1 className="type-title">{block.name}</h1>
         <p className="text-[15px] text-text-secondary">
-          {currentWeek ? `${wave > 1 ? `Wave ${wave} · ` : ""}Week ${currentWeek} of ${block.durationWeeks}` : `Starts ${enrollment!.startDate}`}
+          {currentWeek ? `${wave > 1 ? `Wave ${wave} · ` : ""}Week ${currentWeek} of ${block.durationWeeks}` : `Starts ${trainingEnrollment!.startDate}`}
         </p>
         <Progress
           value={currentWeek ? (currentWeek / block.durationWeeks) * 100 : 0}
@@ -65,7 +65,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
                     <span className="text-[15px] text-text-primary">{d.name}</span>
                     {cardio && (
                       <span className="type-meta font-normal text-text-tertiary">
-                        {d.sessionType === "lifting" ? "+ " : ""}Bike {formatMinutes(cardio.targetMinutes, cardio.targetMinutesMax)}
+                        {d.sessionType === "lifting" ? "+ " : ""}{cardio.modality.replace(/_/g, " ")} {formatMinutes(cardio.targetMinutes, cardio.targetMinutesMax)}
                       </span>
                     )}
                   </span>
