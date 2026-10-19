@@ -49,7 +49,7 @@ async function main() {
   // This uses stable natural keys: repeated pushes preserve existing history.
   for (const block of READINESS_BLOCKS) {
     process.stdout.write("seed " + block.slug + " ... ");
-    await sql.unsafe(buildSeed(block));
+    await sql.unsafe(buildSeed(block, false));
     console.log("ok");
   }
 }

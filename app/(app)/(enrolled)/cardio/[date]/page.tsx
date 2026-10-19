@@ -46,7 +46,7 @@ export default async function CardioPage({ params }: PageProps<"/cardio/[date]">
       blockId={program.blockId}
       userId={user.id}
       prescription={resolved.cardio!}
-      allowModalityChoice={resolved.dayOfWeek === 6}
+      allowModalityChoice={true}
       isDeload={resolved.isDeload}
     />
   );

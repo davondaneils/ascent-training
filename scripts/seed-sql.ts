@@ -15,7 +15,7 @@ function lit(v: SqlValue): string {
 
 const row = (values: SqlValue[]) => `  (${values.map(lit).join(", ")})`;
 
-export function buildSeed(block: ProgramBlock): string {
+export function buildSeed(block: ProgramBlock, isActive = true): string {
   const out: string[] = [];
   const blockRef = `(select id from public.program_blocks where slug = ${lit(block.slug)})`;
 
@@ -23,7 +23,7 @@ export function buildSeed(block: ProgramBlock): string {
   out.push(`begin;`, ``);
 
   out.push(`insert into public.program_blocks (slug, name, description, duration_weeks, deload_weeks, is_active) values`);
-  out.push(row([block.slug, block.name, block.description, block.durationWeeks, block.deloadWeeks, true]));
+  out.push(row([block.slug, block.name, block.description, block.durationWeeks, block.deloadWeeks, isActive]));
   out.push(`on conflict (slug) do update set name = excluded.name, description = excluded.description,`);
   out.push(`  duration_weeks = excluded.duration_weeks, deload_weeks = excluded.deload_weeks, is_active = excluded.is_active;`);
   out.push(``);

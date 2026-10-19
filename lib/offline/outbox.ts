@@ -1,6 +1,8 @@
 // Durable, ordered queue of workout writes. Every op is an idempotent upsert/update keyed by a
 // client-generated id, so replaying after a failure or reload is safe.
 
+import type { CardioModality } from "@/lib/training/types";
+
 export interface SetRow {
   id: string;
   user_id: string;
@@ -19,7 +21,7 @@ export interface CardioRow {
   program_block_id: string;
   week_number: number;
   scheduled_date: string;
-  modality: "bike" | "incline_walk";
+  modality: CardioModality;
   target_minutes: number;
   actual_minutes: number;
   rpe: number;
