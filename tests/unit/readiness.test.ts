@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { READINESS_BLOCKS, createReadinessBlock, physicalBlockForDate } from "@/lib/training/programs/readiness";
 import { CAMPAIGN_CYCLES } from "@/lib/campaign/roadmap";
 import { buildSeed } from "../../scripts/seed-sql";
@@ -96,6 +98,14 @@ describe("five-year physical program", () => {
     ]);
     expect(today.resolved.cardio).toBeNull();
     expect(today.resolved.week).toBe(1);
+  });
+  it("expands BOTH log and prescription database constraints before seeding advanced modalities", () => {
+    const migration = readFileSync(resolve("supabase/migrations/20261019000002_physical_training.sql"), "utf8");
+    expect(migration).toContain("alter table public.cardio_prescriptions");
+    expect(migration).toContain("alter table public.cardio_logs");
+    for (const mode of ["run_walk","run","swim","hike","loaded_hike"]) {
+      expect(migration.split("'"+mode+"'").length).toBeGreaterThanOrEqual(3);
+    }
   });
   it("seeds new blocks as inactive without changing the original active Phase 1", () => {
     const sql = buildSeed(createReadinessBlock(0), false);
