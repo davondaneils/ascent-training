@@ -5,6 +5,11 @@ import type { LocalDate } from "@/lib/training/types";
 
 export type WorkoutStatus = "scheduled" | "in_progress" | "completed" | "abandoned";
 
+/**
+ * The day's workout. Prefers the current program day; otherwise returns a workout already
+ * logged that date under an earlier training cycle, so a cycle changeover never offers a
+ * second session on a day that was already trained.
+ */
 export async function getWorkoutForDate(
   supabase: SupabaseClient,
   userId: string,
@@ -13,13 +18,16 @@ export async function getWorkoutForDate(
 ): Promise<{ id: string; status: WorkoutStatus } | null> {
   const { data, error } = await supabase
     .from("workouts")
-    .select("id, status")
+    .select("id, status, program_day_id")
     .eq("user_id", userId)
     .eq("scheduled_date", date)
-    .eq("program_day_id", programDayId)
-    .maybeSingle<{ id: string; status: WorkoutStatus }>();
+    .returns<{ id: string; status: WorkoutStatus; program_day_id: string }[]>();
   if (error) throw new Error(`Loading workout failed: ${error.message}`);
-  return data;
+  const rows = data ?? [];
+  const row =
+    rows.find((r) => r.program_day_id === programDayId) ??
+    rows.find((r) => r.status === "completed" || r.status === "in_progress");
+  return row ? { id: row.id, status: row.status } : null;
 }
 
 export interface CardioLogSummary {

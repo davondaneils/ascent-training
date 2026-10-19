@@ -47,7 +47,7 @@ export async function testUserId(): Promise<string> {
 export async function resetTestUser(): Promise<string> {
   const id = await testUserId();
   const db = adminClient();
-  for (const table of ["workouts", "cardio_logs", "mobility_logs", "program_enrollments"]) {
+  for (const table of ["workouts", "cardio_logs", "mobility_logs", "mission_logs", "capability_tests", "program_enrollments"]) {
     const { error } = await db.from(table).delete().eq("user_id", id);
     if (error) throw new Error(`reset ${table}: ${error.message}`);
   }

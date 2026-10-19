@@ -40,7 +40,7 @@ export function buildSeed(block: ProgramBlock, isActive = true): string {
   out.push(``);
 
   out.push(`insert into public.program_days (program_block_id, day_of_week, name, full_name, session_type, notes, sort_order)`);
-  out.push(`select ${blockRef}, v.* from (values`);
+  out.push(`select ${blockRef}, v.day_of_week::int, v.name, v.full_name, v.session_type, v.notes::text, v.sort_order::int from (values`);
   out.push(block.days.map((d) => row([d.dayOfWeek, d.name, d.fullName, d.sessionType, d.notes, d.dayOfWeek])).join(",\n"));
   out.push(`) as v (day_of_week, name, full_name, session_type, notes, sort_order)`);
   out.push(`on conflict (program_block_id, day_of_week) do update set name = excluded.name, full_name = excluded.full_name,`);
@@ -51,9 +51,11 @@ export function buildSeed(block: ProgramBlock, isActive = true): string {
   out.push(`insert into public.exercise_prescriptions (key, program_day_id, exercise_id, section, sort_order, sets, sets_max,`);
   out.push(`  rep_min, rep_max, duration_seconds, duration_seconds_max, per_side, rest_seconds, target_rir_min, target_rir_max,`);
   out.push(`  progression_type, load_increment, notes, is_optional)`);
-  out.push(`select v.key, pd.id, e.id, v.section, v.sort_order, v.sets, v.sets_max, v.rep_min, v.rep_max, v.duration_seconds,`);
-  out.push(`  v.duration_seconds_max, v.per_side, v.rest_seconds, v.target_rir_min, v.target_rir_max, v.progression_type,`);
-  out.push(`  v.load_increment, v.notes, v.is_optional`);
+  // Explicit casts: a VALUES column that is null in every row is otherwise typed as text.
+  out.push(`select v.key, pd.id, e.id, v.section, v.sort_order::int, v.sets::int, v.sets_max::int, v.rep_min::int,`);
+  out.push(`  v.rep_max::int, v.duration_seconds::int, v.duration_seconds_max::int, v.per_side::boolean, v.rest_seconds::int,`);
+  out.push(`  v.target_rir_min::numeric, v.target_rir_max::numeric, v.progression_type, v.load_increment::numeric,`);
+  out.push(`  v.notes::text, v.is_optional::boolean`);
   out.push(`from (values`);
   out.push(
     prescriptions
@@ -82,7 +84,8 @@ export function buildSeed(block: ProgramBlock, isActive = true): string {
 
   out.push(`insert into public.cardio_prescriptions (program_block_id, week_number, day_of_week, modality, target_minutes,`);
   out.push(`  target_minutes_max, target_rpe_min, target_rpe_max, notes)`);
-  out.push(`select ${blockRef}, v.* from (values`);
+  out.push(`select ${blockRef}, v.week_number::int, v.day_of_week::int, v.modality, v.target_minutes::int,`);
+  out.push(`  v.target_minutes_max::int, v.target_rpe_min::int, v.target_rpe_max::int, v.notes::text from (values`);
   out.push(
     block.cardio
       .map((c) => row([c.weekNumber, c.dayOfWeek, c.modality, c.targetMinutes, c.targetMinutesMax, c.targetRpeMin, c.targetRpeMax, c.notes]))

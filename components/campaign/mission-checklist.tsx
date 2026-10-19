@@ -15,10 +15,18 @@ export function MissionChecklist({ missions, initialLogs }: {
 
   function submit(mission: Mission, status: MissionOutcome | "remove") {
     setError(null);
+    const note = evidence[mission.id] ?? logs.find((x) => x.missionId === mission.id)?.evidence ?? "";
+    if (mission.requiresEvidence && status !== "remove" && note.trim().length < 15) {
+      setError("Describe the assessment result in at least 15 characters.");
+      return;
+    }
     startTransition(async () => {
       try {
-        const note = evidence[mission.id] ?? logs.find((x) => x.missionId === mission.id)?.evidence ?? "";
-        await recordMission({ date: mission.date, missionId: mission.id, status, evidence: note });
+        const result = await recordMission({ date: mission.date, missionId: mission.id, status, evidence: note });
+        if (result.error) {
+          setError(result.error);
+          return;
+        }
         setLogs((prev) => status === "remove"
           ? prev.filter((x) => x.missionId !== mission.id)
           : [...prev.filter((x) => x.missionId !== mission.id), { missionId: mission.id, status, evidence: note }]);
@@ -89,7 +97,7 @@ export function MissionChecklist({ missions, initialLogs }: {
                     </>
                   ) : !log ? (
                     <button type="button" disabled={pending} onClick={() => submit(mission, "completed")}
-                      className="min-h-11 rounded-[12px] bg-accent px-4 text-[14px] font-medium text-white disabled:opacity-50">
+                      className="min-h-11 rounded-[12px] bg-accent px-4 text-[14px] font-medium text-accent-foreground disabled:opacity-50">
                       Mark complete
                     </button>
                   ) : null}

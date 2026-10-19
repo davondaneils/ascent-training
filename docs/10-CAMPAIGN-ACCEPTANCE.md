@@ -51,4 +51,4 @@
 
 ## Deployment gate
 
-**Do not merge or deploy before the new migration and device QA are ready.** Existing production remains unchanged while this work is on a feature branch.
+Migrations and the 20-block seed were applied to the hosted database on 2026-10-19 before merge. The E2E suite (`npm run test:e2e`, test account only) now covers the readiness schedule, cycle changeover, run/swim/loaded-hike logging, offline set sync, missions, crucible evidence, benchmarks, RLS on the campaign tables and 375/390/430 px layouts.

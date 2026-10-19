@@ -71,13 +71,28 @@ test.describe("auth", () => {
 
     const { data: others } = await adminClient().from("profiles").select("id").neq("id", me).limit(1);
     if (others && others.length > 0) {
-      const { data: block } = await user.from("program_blocks").select("id").single();
+      const { data: block } = await user.from("program_blocks").select("id").eq("is_active", true).single();
       const { error } = await user.from("cardio_logs").insert({
         id: crypto.randomUUID(), user_id: others[0].id, program_block_id: block!.id, week_number: 1,
         scheduled_date: "2026-09-28", modality: "bike", target_minutes: 15, actual_minutes: 15, rpe: 3,
         completed_at: new Date().toISOString(),
       });
       expect(error?.code).toBe("42501");
+
+      // Campaign tables: no cross-user writes, and reads return only the caller's rows.
+      const mission = await user.from("mission_logs").insert({
+        user_id: others[0].id, scheduled_date: "2026-09-28", mission_id: "rls-probe", status: "completed",
+      });
+      expect(mission.error?.code).toBe("42501");
+      const capability = await user.from("capability_tests").insert({
+        user_id: others[0].id, test_key: "pullups_strict", value: 1, tested_on: "2026-09-28",
+      });
+      expect(capability.error?.code).toBe("42501");
+    }
+    for (const table of ["workouts", "cardio_logs", "mission_logs", "capability_tests"]) {
+      const { data, error } = await user.from(table).select("user_id");
+      expect(error).toBeNull();
+      expect((data ?? []).every((r) => r.user_id === me)).toBe(true);
     }
     await user.auth.signOut({ scope: "local" });
   });

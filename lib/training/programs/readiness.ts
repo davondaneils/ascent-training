@@ -11,7 +11,7 @@ import { CAMPAIGN_CYCLES } from "@/lib/campaign/roadmap";
 import { addCalendarYears, campaignPosition } from "@/lib/campaign/schedule";
 import { deloadMinutes } from "../deload";
 import type {
-  CardioModality, CardioPrescription, DayOfWeek, Exercise, LocalDate,
+  CardioModality, CardioPrescription, Exercise, LocalDate,
   Prescription, ProgramBlock, ProgramDay,
 } from "../types";
 import { PHASE_1 } from "./phase-1";
@@ -206,6 +206,8 @@ export function createReadinessBlock(cycleIndex: number): ProgramBlock {
   const strength = strengthFor(stage);
   const exercises = [...PHASE_1.exercises, carryExercise];
   const known = new Set(exercises.map((e) => e.slug));
+  const cardio = weeklyCardio(cycleIndex);
+  const swims = cardio.some((c) => c.modality === "swim");
   const days: ProgramDay[] = [
     ...([1, 3, 5] as const).map((dow, i): ProgramDay => {
       const plan = strength[i];
@@ -220,9 +222,12 @@ export function createReadinessBlock(cycleIndex: number): ProgramBlock {
     }),
     { dayOfWeek: 2, name: "Aerobic Development", fullName: "Easy Aerobic / Run-Walk", sessionType: "aerobic_mobility",
       notes: "Take the low-impact alternative until joints and breathing tolerate the planned modality.", prescriptions: [] },
-    { dayOfWeek: 4, name: "Water Skills & Mobility", fullName: "Supervised Swim / Mobility",
+    { dayOfWeek: 4, name: swims ? "Water Skills & Mobility" : "Easy Aerobic & Mobility",
+      fullName: swims ? "Supervised Swim / Mobility" : "Easy Aerobic / Mobility",
       sessionType: "aerobic_mobility",
-      notes: "Only swim with appropriate supervision. Use walking or cycling if a safe pool is unavailable.",
+      notes: swims
+        ? "Only swim with appropriate supervision. Use walking or cycling if a safe pool is unavailable."
+        : "Comfortable walking or cycling, then the mobility checklist. Swimming begins next cycle.",
       prescriptions: [
         movement(slug, 4, 1, "knee-to-wall", 8, true),
         movement(slug, 4, 2, "90-90-hip-switch", 6, true),
@@ -246,7 +251,7 @@ export function createReadinessBlock(cycleIndex: number): ProgramBlock {
     slug, name: `Year ${cycle.year} · ${cycle.title}`,
     description: `13-week physical cycle: ${stage}. ${cycle.focus}. Three full-body strength sessions, ` +
       "two aerobic/water days, one progressively longer walk/hike, and Sunday rest. Advanced modalities are optional and must be earned.",
-    durationWeeks: 13, deloadWeeks: [4, 8, 13], exercises, days, cardio: weeklyCardio(cycleIndex),
+    durationWeeks: 13, deloadWeeks: [4, 8, 13], exercises, days, cardio,
   };
 }
 

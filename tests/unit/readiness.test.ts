@@ -114,4 +114,14 @@ describe("five-year physical program", () => {
     expect(sql).toContain("on conflict (key) do update");
     expect(sql).not.toContain("delete from public.workouts");
   });
+  it("casts nullable seed columns so all-null VALUES columns are not typed as text", () => {
+    const sql = buildSeed(createReadinessBlock(0), false);
+    expect(sql).toContain("v.sets_max::int");
+    expect(sql).toContain("v.target_minutes_max::int");
+    expect(sql).toContain("v.load_increment::numeric");
+  });
+  it("names Thursday by what the cycle actually prescribes", () => {
+    expect(createReadinessBlock(0).days.find((d) => d.dayOfWeek === 4)?.name).toBe("Easy Aerobic & Mobility");
+    expect(createReadinessBlock(1).days.find((d) => d.dayOfWeek === 4)?.name).toBe("Water Skills & Mobility");
+  });
 });

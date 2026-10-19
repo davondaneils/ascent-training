@@ -51,4 +51,8 @@ The workout timer is not an appropriate swimming lap or GPS tracker. It tracks *
 - The cardio timer records minutes and perceived exertion, not pace/distance, pool laps or pack weight.
 - Swimming and hiking need live conditions, suitable facilities and qualified supervision when relevant.
 - Assessments and physical training are associated by cycle, but an assessment does not automatically generate a tailored future prescription.
-- No changes have been made to the live Supabase environment or production app; the database must be migrated/seeded, then the build deployed and manually checked on iPhone.
+- Carry load and pack weight are not recorded, so carrying strength and loaded-hike progress are only visible through the Progress benchmarks.
+- Running stays at easy effort (RPE 2–4) for all five years; there is no tempo or interval work, so 5 km pace will improve slowly.
+- There is no barbell back squat, conventional deadlift or overhead press; leg press, RDL and landmine press are the main lower-body and pressing lifts, which limits absolute strength.
+
+Deployed 2026-10-19: both migrations applied and all 20 blocks seeded to the hosted Supabase project (seed SQL now casts nullable columns; the original version failed on a real database).

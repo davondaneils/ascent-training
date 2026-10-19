@@ -39,7 +39,11 @@ export function CampaignProgress({ position, completedThisWeek, scheduledThisWee
     setSuccess(null);
     startTransition(async () => {
       try {
-        await recordCapabilityTest({ key, value: Number(value) });
+        const result = await recordCapabilityTest({ key, value: Number(value) });
+        if (result.error) {
+          setError(result.error);
+          return;
+        }
         setSuccess("Result recorded.");
         setValue("");
       } catch (err) {
