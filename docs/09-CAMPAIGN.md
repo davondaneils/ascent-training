@@ -12,7 +12,7 @@ Become physically capable, practically useful, calm under pressure, faithful to 
 - Each arc: concrete competence target, realistic civilian emergency, 13 escalating learning/practice/retest stages, and a Saturday week-13 assessment.
 - Mon-Sat: one Scripture/prayer assignment (30 min) plus one practical assignment (20-90 min) from the cycle-specific playbook (`lib/campaign/playbook.ts`, six concrete practices per cycle).
 - Sunday: no exercise or mission checklists. Worship, rest, family, hospitality, voluntary prayer and fasting as appropriate.
-- Physical training starts with the existing evidence-based Phase 1. After week 12 it automatically moves to a repeatable 12-week maintenance wave (not a permanent week-12 deload), with established aerobic volume and scheduled deloads. This is an interim bridge, not a claim that the complete five-year physical progression is programmed. A separately designed and evaluated strength/endurance block should replace maintenance once ready. Never jump abruptly to loaded hikes, swimming, running, or intense endurance.
+- Physical training now consists of **20 separate 13-week blocks** aligned with the campaign cycles. Each has actual three-day full-body strength prescriptions, two aerobic/mobility slots, a Saturday longer walk/hike and a Sunday rest. Progressive exercise targets and deloads are specified in `lib/training/programs/readiness.ts`. See [`11-PHYSICAL-PROGRAM.md`](11-PHYSICAL-PROGRAM.md) for readiness gates and limitations. Calendar phase advancement does not prove physical readiness; substitute lower-impact sessions when not prepared.
 - Assessments use observed results, a note stating evidence, and either `completed` or `needs_work`; never fabricate a survival probability or moral score.
 
 ## Mission domains
@@ -33,4 +33,4 @@ All drills are defensive and civilian. No combat, ambush, weapon, insurgency, or
 
 ## Deploy
 
-Apply `supabase/migrations/20261018000001_campaign.sql` to the existing hosted Supabase instance **before enabling the new app** (per the README's `npm run db:push` flow). Then deploy and verify RLS, logging, Sunday behavior, and the new Progress assessment form.
+Run `npm run db:push` against the intended hosted Supabase database **before deploying**, applying both campaign and physical migrations and seeding all 20 new program blocks. Verify RLS, date rollover, workout logging, offline sync, Sunday rest, safety alternatives, and iPhone layout. A manually applied migration alone will not seed program rows.
