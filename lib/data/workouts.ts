@@ -212,7 +212,7 @@ export async function loadExerciseHistory(
         date: r.workouts.scheduled_date,
         weekNumber: r.workouts.week_number,
         isDeload: program.block.deloadWeeks.includes(r.workouts.week_number),
-        prescriptionKey: program.prescriptionKeysById[r.workout_exercises.prescription_id],
+        prescriptionKey: program.prescriptionKeysById[r.workout_exercises.prescription_id] ?? "historical:" + r.workout_exercises.prescription_id,
         exerciseSlug: program.exerciseSlugsById[r.exercise_id],
         sets: [],
       };

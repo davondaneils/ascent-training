@@ -6,6 +6,8 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import postgres from "postgres";
+import { READINESS_BLOCKS } from "../lib/training/programs/readiness";
+import { buildSeed } from "./seed-sql";
 
 const root = process.cwd();
 const url = process.env.SUPABASE_DB_URL;
@@ -41,6 +43,13 @@ async function main() {
   for (const s of sqlFiles("supabase/seed")) {
     process.stdout.write(`seed ${s.name} … `);
     await sql.unsafe(readFileSync(s.path, "utf8"));
+    console.log("ok");
+  }
+  // Seed the 20 physical phases after all schema migrations and legacy seeds.
+  // This uses stable natural keys: repeated pushes preserve existing history.
+  for (const block of READINESS_BLOCKS) {
+    process.stdout.write("seed " + block.slug + " ... ");
+    await sql.unsafe(buildSeed(block));
     console.log("ok");
   }
 }

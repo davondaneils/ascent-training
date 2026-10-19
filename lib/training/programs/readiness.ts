@@ -95,7 +95,7 @@ function strengthFor(stage: StrengthStage): StrengthWeek {
         L("incline-db-press", 2, 8, 10, 120), L("lat-pulldown", 2, 8, 12, 90)],
       carrySeconds: 40 },
     { name: "Strength C · Strength & Skill", notes: "A manageable session before Saturday. Quality over volume.",
-      exercises: [L("goblet-squat", 2, 8, 12, 90, 3), L("paused-bench-press", 2, 6, 8, 150),
+      exercises: [L("heel-elevated-goblet-squat", 2, 8, 12, 90, 3), L("paused-bench-press", 2, 6, 8, 150),
         L("pull-up", 3, 5, 8, 120, 2, "assistance_reduction"), L("half-kneeling-landmine-press", 2, 8, 12, 90)],
       carrySeconds: 35 },
   ];
