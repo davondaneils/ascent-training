@@ -175,7 +175,7 @@ export function consistency(input: {
   const liftingDays = new Set(block.days.filter((d) => d.sessionType === "lifting").map((d) => d.dayOfWeek));
   const totalDays = block.durationWeeks * 7;
   const absoluteElapsed = Math.max(0, daysBetween(startDate, today));
-  const wave = Math.floor(absoluteElapsed / totalDays);
+  const wave = block.slug.startsWith("readiness-") ? 0 : Math.floor(absoluteElapsed / totalDays);
   const waveStart = addDays(startDate, wave * totalDays);
   const elapsed = today < startDate ? 0 : Math.min(totalDays, daysBetween(waveStart, today) + 1);
   let liftingScheduled = 0;

@@ -71,6 +71,20 @@ describe("five-year physical program", () => {
     expect(physicalBlockForDate(START, "2030-09-28")).toMatchObject({cycleIndex: 16});
     expect(physicalBlockForDate(START, "2031-09-27")).toMatchObject({cycleIndex: 19});
   });
+  it("keeps surplus calendar days in the recovery week instead of an unintended new wave", () => {
+    const block = READINESS_BLOCKS[3];
+    const p = physicalBlockForDate(START, "2027-09-27");
+    expect(p.cycleIndex).toBe(3);
+    const today = resolveToday(block, {
+      programBlockSlug: block.slug, startDate: p.startDate,
+    }, new Date("2027-09-27T16:00:00Z"));
+    expect(today.status).toBe("active");
+    if (today.status === "active") {
+      expect(today.resolved.week).toBe(13);
+      expect(today.resolved.wave).toBe(1);
+      expect(today.resolved.isDeload).toBe(true);
+    }
+  });
   it("prescribes a genuinely different Monday in the first phase", () => {
     const block = READINESS_BLOCKS[0];
     const today = resolveToday(block, { programBlockSlug: block.slug, startDate: START }, new Date("2026-09-28T16:00:00Z"));

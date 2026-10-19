@@ -35,8 +35,12 @@ export function programPosition(
     return { status: "before_start", startDate: enrollment.startDate, daysUntilStart: -offset };
   }
   const absoluteWeek = Math.floor(offset / 7) + 1;
-  const week = ((absoluteWeek - 1) % block.durationWeeks) + 1;
-  const wave = Math.floor((absoluteWeek - 1) / block.durationWeeks) + 1;
+  // Four 13-week arcs leave one or two extra calendar days each year.
+  // Do not start an unintended second wave during that recovery interval.
+  const readiness = block.slug.startsWith("readiness-");
+  const week = readiness ? Math.min(absoluteWeek, block.durationWeeks)
+    : ((absoluteWeek - 1) % block.durationWeeks) + 1;
+  const wave = readiness ? 1 : Math.floor((absoluteWeek - 1) / block.durationWeeks) + 1;
   return { status: "active", week, absoluteWeek, wave, isDeload: isDeloadWeek(block, week) };
 }
 
@@ -121,7 +125,7 @@ export function resolveToday(
   if (position.status === "before_start") {
     return { status: "before_start", date, startDate: position.startDate, daysUntilStart: position.daysUntilStart };
   }
-  return { status: "active", date, resolved: resolveDay(block, position.week, date, position.wave) };
+  return { status: "active", date, resolved: { ...resolveDay(block, position.week, date, position.wave), absoluteWeek: position.absoluteWeek } };
 }
 
 /** First and last civil date of an absolute training week (weeks run from the start date). */
