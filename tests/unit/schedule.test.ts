@@ -85,6 +85,23 @@ describe("program week", () => {
     });
   });
 
+  it("rolls a new training wave after week 12 instead of remaining on a permanent deload", () => {
+    const pos = programPosition(PHASE_1, enrollment, addDays(START, 84));
+    expect(pos.status).toBe("active");
+    if (pos.status !== "active") return;
+    expect(pos.week).toBe(1);
+    expect(pos.absoluteWeek).toBe(13);
+    expect(pos.wave).toBe(2);
+    expect(pos.isDeload).toBe(false);
+    expect(scheduledCounts(PHASE_1, 1, 2).cardio).toBe(6);
+    const today = resolveToday(PHASE_1, enrollment, new Date(addDays(START, 84) + "T12:00:00Z"));
+    expect(today.status).toBe("active");
+    if (today.status === "active") {
+      expect(today.resolved.week).toBe(1);
+      expect(today.resolved.wave).toBe(2);
+      expect(today.resolved.cardio?.targetMinutes).toBeGreaterThanOrEqual(20);
+    }
+  });
   it("flags deload weeks 4, 8, 12", () => {
     const deloads = Array.from({ length: 12 }, (_, i) => i + 1).filter((w) => {
       const pos = programPosition(PHASE_1, enrollment, addDays(START, (w - 1) * 7));

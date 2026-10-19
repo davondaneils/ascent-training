@@ -1,4 +1,6 @@
 import { TodayView } from "@/components/today/today-view";
+import { campaignPosition, missionsForDate } from "@/lib/campaign/schedule";
+import { getMissionLogsForDate } from "@/lib/data/campaign";
 import { serverNow } from "@/lib/clock";
 import { getAppContext } from "@/lib/data/context";
 import {
@@ -10,9 +12,10 @@ import {
 import { programWeekRange, resolveToday, scheduledCounts } from "@/lib/training/schedule";
 
 export default async function TodayPage() {
-  const { user, supabase, program, enrollment } = await getAppContext();
+  const { user, supabase, program, enrollment, trainingEnrollment } = await getAppContext();
   const { block } = program;
-  const today = resolveToday(block, enrollment!, await serverNow());
+  const today = resolveToday(block, trainingEnrollment!, await serverNow());
+  const campaign = campaignPosition(enrollment!.startDate, today.date);
 
   const base = {
     block,
@@ -24,18 +27,20 @@ export default async function TodayPage() {
     mobilityDone: [],
     completion: { lifting: 0, cardio: 0 },
     scheduled: { lifting: 0, cardio: 0 },
+    campaign: { position: campaign, missions: missionsForDate(enrollment!.startDate, today.date), logs: [] },
   };
   if (today.status !== "active" || today.resolved.day.sessionType === "rest") return <TodayView {...base} />;
 
   const { resolved } = today;
-  const range = programWeekRange(enrollment!.startDate, resolved.week);
-  const [workout, cardioLogs, mobilityDone, completion] = await Promise.all([
+  const range = programWeekRange(trainingEnrollment!.startDate, resolved.absoluteWeek);
+  const [workout, cardioLogs, mobilityDone, completion, missionLogs] = await Promise.all([
     resolved.day.sessionType === "lifting"
       ? getWorkoutForDate(supabase, user.id, today.date, program.dayIds[resolved.dayOfWeek])
       : null,
     resolved.cardio ? getCardioLogsForDate(supabase, user.id, today.date) : [],
     resolved.mobility.length > 0 ? getMobilityDoneForDate(supabase, user.id, today.date) : new Set<string>(),
     getWeekCompletion(supabase, user.id, range.from, range.to),
+    getMissionLogsForDate(supabase, user.id, today.date),
   ]);
 
   return (
@@ -45,7 +50,8 @@ export default async function TodayPage() {
       cardioLogs={cardioLogs}
       mobilityDone={[...mobilityDone]}
       completion={completion}
-      scheduled={scheduledCounts(block, resolved.week)}
+      scheduled={scheduledCounts(block, resolved.week, resolved.wave)}
+      campaign={{ ...base.campaign, logs: missionLogs }}
     />
   );
 }

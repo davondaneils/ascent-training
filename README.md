@@ -45,6 +45,12 @@ Sign in, pick the Phase 1 start date (it defaults to next Monday), and you're in
 
 ---
 
+## Five-year civilian readiness campaign (new)
+
+The Christian-readiness extension lives in `docs/09-CAMPAIGN.md`; the **new active physical programming** is in `docs/11-PHYSICAL-PROGRAM.md`. Enrolled users follow 20 progressive, capability-oriented 13-week training cycles: three full-body strength days, two cardio/swimming days, a longer Saturday walk/hike and Sunday rest. Prior logged workouts remain accessible.
+
+**Required deployment order**: Apply **both** `supabase/migrations/20261018000001_campaign.sql` and `supabase/migrations/20261019000002_physical_training.sql`, then seed all 20 physical blocks. `npm run db:push` performs migrations and seed in that order when `SUPABASE_DB_URL` is configured. **Applying just the migrations in a SQL editor is not enough**. Seeding the 20 blocks requires the script, or an equivalent SQL export. Do not merge/deploy first. New non-gym mission writes require an online connection.
+
 ## Deploying to Vercel
 
 1. Push the repo to GitHub.
@@ -84,13 +90,13 @@ E2E prerequisites: `npx playwright install chromium` and `E2E_EMAIL` set to a pr
 
 Training logic is kept separate from persistence and UI:
 
-- `lib/training/`: the Phase 1 program definition, schedule (week/day in America/Toronto), deload rules, workout-session state machine, cardio state machine, timers, metrics. All pure.
+- `lib/training/`: legacy Phase 1 and the 20 phase-specific readiness definitions, schedule (week/day in America/Toronto), deload rules, workout/cardio state machines, timers and metrics. All pure.
 - `lib/progression/`: next-load recommendations (double progression, assistance reduction, bodyweight). Pure.
 - `lib/data/`: Supabase queries mapped to domain types.
 - `lib/offline/`: local workout snapshot, durable write outbox (idempotent upserts keyed by client ids), merge-on-reload.
 - `app/`, `components/`: screens.
 
-The program is data. `lib/training/programs/phase-1.ts` generates `supabase/seed/phase-1.sql`, and the app reads the seeded tables. A later phase means new seed data, not new screens.
+The program is data. The legacy Phase 1 generates the original seed; `lib/training/programs/readiness.ts` generates all 20 subsequent blocks. `npm run db:push` seeds them idempotently. New prescriptions are selected by the enrollment's campaign date, not by a single always-active 12-week program.
 
 ## Credits
 

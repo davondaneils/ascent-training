@@ -46,3 +46,7 @@ Read these files in order:
 
 The docs are the source of truth. Do not expand scope beyond them.
 
+
+## Five-year campaign extension
+
+See [`09-CAMPAIGN.md`](09-CAMPAIGN.md), [`10-CAMPAIGN-ACCEPTANCE.md`](10-CAMPAIGN-ACCEPTANCE.md), and [`11-PHYSICAL-PROGRAM.md`](11-PHYSICAL-PROGRAM.md) for the October 2026 extension. It adds a Christian readiness mission and curriculum on top of the proven fitness flow. The original V1 scope statements above remain historical context for V1, not exclusions for the extension.

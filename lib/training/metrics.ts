@@ -2,7 +2,7 @@
 
 import { addDays, dayOfWeek, daysBetween } from "@/lib/dates";
 import { completedSets } from "@/lib/progression/reference";
-import { programWeek } from "./schedule";
+import { getCardioForWave } from "./schedule";
 import type { ExercisePerformance, LocalDate, ProgramBlock } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -124,15 +124,19 @@ export function weeklyAerobicMinutes(
   startDate: LocalDate,
   currentWeek: number,
 ): WeekMinutes[] {
-  const weeks: WeekMinutes[] = Array.from({ length: currentWeek }, (_, i) => ({
-    week: i + 1,
-    minutes: 0,
-    isDeload: block.deloadWeeks.includes(i + 1),
-  }));
+  const firstWeek = Math.max(1, currentWeek - 11);
+  const weeks: WeekMinutes[] = Array.from({ length: currentWeek - firstWeek + 1 }, (_, i) => {
+    const week = firstWeek + i;
+    const waveWeek = ((week - 1) % block.durationWeeks) + 1;
+    return { week, minutes: 0, isDeload: block.deloadWeeks.includes(waveWeek) };
+  });
   for (const l of logs) {
-    if (daysBetween(startDate, l.date) < 0) continue;
-    const w = programWeek(startDate, l.date, block.durationWeeks);
-    if (w <= currentWeek) weeks[w - 1].minutes += l.actualMinutes;
+    const offset = daysBetween(startDate, l.date);
+    if (offset < 0) continue;
+    const absoluteWeek = Math.floor(offset / 7) + 1;
+    if (absoluteWeek >= firstWeek && absoluteWeek <= currentWeek) {
+      weeks[absoluteWeek - firstWeek].minutes += l.actualMinutes;
+    }
   }
   return weeks;
 }
@@ -170,8 +174,10 @@ export function consistency(input: {
   const { block, startDate, today } = input;
   const liftingDays = new Set(block.days.filter((d) => d.sessionType === "lifting").map((d) => d.dayOfWeek));
   const totalDays = block.durationWeeks * 7;
-  const elapsed = Math.min(totalDays, Math.max(0, daysBetween(startDate, today) + 1));
-
+  const absoluteElapsed = Math.max(0, daysBetween(startDate, today));
+  const wave = block.slug.startsWith("readiness-") ? 0 : Math.floor(absoluteElapsed / totalDays);
+  const waveStart = addDays(startDate, wave * totalDays);
+  const elapsed = today < startDate ? 0 : Math.min(totalDays, daysBetween(waveStart, today) + 1);
   let liftingScheduled = 0;
   let cardioScheduled = 0;
   let liftingTotal = 0;
@@ -180,7 +186,7 @@ export function consistency(input: {
     const week = Math.floor(i / 7) + 1;
     const dow = dayOfWeek(addDays(startDate, i)); // program days follow the calendar
     const lifts = liftingDays.has(dow) ? 1 : 0;
-    const cardio = block.cardio.some((c) => c.weekNumber === week && c.dayOfWeek === dow) ? 1 : 0;
+    const cardio = getCardioForWave(block, week, dow, wave + 1) ? 1 : 0;
     liftingTotal += lifts;
     cardioTotal += cardio;
     if (i < elapsed) {
@@ -191,7 +197,7 @@ export function consistency(input: {
 
   // Only sessions in the block and not after today, so "done" can never exceed "scheduled to date".
   const inBlock = (d: LocalDate) =>
-    daysBetween(startDate, d) >= 0 && daysBetween(startDate, d) < totalDays && daysBetween(d, today) >= 0;
+    daysBetween(waveStart, d) >= 0 && daysBetween(waveStart, d) < totalDays && daysBetween(d, today) >= 0;
   const liftingDone = new Set(input.completedLiftingDates.filter(inBlock)).size;
   const cardioDone = new Set(input.cardioDates.filter(inBlock)).size;
   const total = liftingTotal + cardioTotal;

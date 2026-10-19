@@ -90,6 +90,16 @@ describe("cardio", () => {
     ]);
   });
 
+  it("shows only the latest 12 weeks, without merging later waves into week 12", () => {
+    const logs = [
+      { date: "2026-09-28", actualMinutes: 20, rpe: 2 },
+      { date: "2026-12-21", actualMinutes: 60, rpe: 3 },
+    ];
+    const points = weeklyAerobicMinutes(logs, PHASE_1, "2026-09-28", 13);
+    expect(points).toHaveLength(12);
+    expect(points[0].week).toBe(2);
+    expect(points[11]).toEqual({ week: 13, minutes: 60, isDeload: false });
+  });
   it("finds the longest continuous session", () => {
     expect(longestSession(logs.slice(0, 4))).toEqual({ date: "2026-10-03", actualMinutes: 31, rpe: 3 });
     expect(longestSession([])).toBeNull();
@@ -129,6 +139,15 @@ describe("consistency", () => {
     expect(c.cardio.done).toBe(0);
   });
 
+  it("counts the current training wave rather than accumulating only the first 12 weeks", () => {
+    const c = consistency({
+      block: PHASE_1, startDate: "2026-09-28", today: "2026-12-21",
+      completedLiftingDates: ["2026-09-28", "2026-12-21"],
+      cardioDates: ["2026-09-28", "2026-12-21"],
+    });
+    expect(c.lifting).toEqual({ done: 1, scheduled: 1 });
+    expect(c.cardio).toEqual({ done: 1, scheduled: 1 });
+  });
   it("is zero before the start date", () => {
     const c = consistency({ block: PHASE_1, startDate: "2026-09-28", today: "2026-09-27", completedLiftingDates: [], cardioDates: [] });
     expect(c.lifting.scheduled).toBe(0);

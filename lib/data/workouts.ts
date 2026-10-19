@@ -180,7 +180,7 @@ interface HistoryRow {
   weight: number | string | null;
   reps: number | null;
   workout_exercises: { prescription_id: string } | null;
-  workouts: { scheduled_date: LocalDate; week_number: number } | null;
+  workouts: { scheduled_date: LocalDate; week_number: number; program_blocks: { deload_weeks: number[] } | null } | null;
 }
 
 /** Recent completed exposures to the given exercises, excluding one workout. Scoped, not full history. */
@@ -192,7 +192,7 @@ export async function loadExerciseHistory(
   if (input.exerciseIds.length === 0) return [];
   const { data, error } = await supabase
     .from("workout_sets")
-    .select("workout_exercise_id, workout_id, exercise_id, set_number, weight, reps, workout_exercises(prescription_id), workouts(scheduled_date, week_number)")
+    .select("workout_exercise_id, workout_id, exercise_id, set_number, weight, reps, workout_exercises(prescription_id), workouts(scheduled_date, week_number, program_blocks(deload_weeks))")
     .eq("user_id", input.userId)
     .in("exercise_id", input.exerciseIds)
     .neq("workout_id", input.excludeWorkoutId)
@@ -211,8 +211,8 @@ export async function loadExerciseHistory(
         workoutId: r.workout_id,
         date: r.workouts.scheduled_date,
         weekNumber: r.workouts.week_number,
-        isDeload: program.block.deloadWeeks.includes(r.workouts.week_number),
-        prescriptionKey: program.prescriptionKeysById[r.workout_exercises.prescription_id],
+        isDeload: (r.workouts.program_blocks?.deload_weeks ?? program.block.deloadWeeks).includes(r.workouts.week_number),
+        prescriptionKey: program.prescriptionKeysById[r.workout_exercises.prescription_id] ?? "historical:" + r.workout_exercises.prescription_id,
         exerciseSlug: program.exerciseSlugsById[r.exercise_id],
         sets: [],
       };

@@ -44,7 +44,7 @@ export type LoadType =
  */
 export type PrescriptionSection = "prep" | "main" | "mobility";
 
-export type CardioModality = "bike" | "incline_walk";
+export type CardioModality = "bike" | "incline_walk" | "run_walk" | "run" | "swim" | "hike" | "loaded_hike";
 
 export interface Exercise {
   slug: string;

@@ -1,4 +1,6 @@
-# 02 — Training System
+# 02 — Legacy Training System (V1)
+
+**Historical specification.** This document describes the original shipped 12-week upper/lower Phase 1 and is retained for existing training history, reference and old seed generation. It is **not** the active five-year physical plan after the October 2026 upgrade. See [`11-PHYSICAL-PROGRAM.md`](11-PHYSICAL-PROGRAM.md) and `lib/training/programs/readiness.ts` for the updated workouts.
 
 ## Phase 1
 

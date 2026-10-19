@@ -7,6 +7,7 @@ import {
 } from "@/lib/progression";
 import { referenceWeight } from "@/lib/progression/reference";
 import { PHASE_1 } from "@/lib/training/programs/phase-1";
+import { READINESS_BLOCKS } from "@/lib/training/programs/readiness";
 import type { ExercisePerformance, LoggedSet, Prescription } from "@/lib/training/types";
 
 const sets = (weight: number | null, ...reps: number[]): LoggedSet[] =>
@@ -120,6 +121,15 @@ describe("getNextPrescription", () => {
     expect(r.recommendedWeight).toBeNull();
   });
 
+  it("never auto-increases weight on the first exposure to a new physical cycle", () => {
+    const newBench = READINESS_BLOCKS[0].days[0].prescriptions[0];
+    const old = [perf("mon-bench-press", "bench-press", "2026-09-25", sets(185, 8, 8, 8, 8))];
+    const r = getNextPrescription({
+      exercise: benchEx, prescription: newBench, history: old, isDeloadWeek: false,
+    });
+    expect(r).toMatchObject({kind: "same", recommendedWeight: 185});
+    expect(r.reason).toContain("New training cycle");
+  });
   it("explains an increase", () => {
     const history = [perf("mon-bench-press", "bench-press", "2026-10-05", sets(185, 6, 6, 6, 6))];
     const r = getNextPrescription({ exercise: benchEx, prescription: bench, history, isDeloadWeek: false });

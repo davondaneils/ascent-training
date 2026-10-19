@@ -14,7 +14,7 @@ export default async function OnboardingPage() {
         <p className="text-sm text-text-tertiary">{program.block.name}</p>
         <h1 className="text-3xl font-semibold tracking-tight text-text-primary">When do you start?</h1>
         <p className="text-text-secondary">
-          Week 1 begins on this date. Twelve weeks, Monday to Sunday. You set this once.
+          Your five-year campaign begins here. Physical training follows 13-week cycles, with Sunday for worship and rest. You set this date once.
         </p>
       </div>
       <StartForm defaultDate={nextMonday(toLocalDate(await serverNow()))} />

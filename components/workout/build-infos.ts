@@ -51,7 +51,7 @@ export function buildWorkoutMeta(resolved: ResolvedDay): WorkoutMeta {
   return {
     dayName: resolved.day.name,
     nextScheduled: resolved.cardio
-      ? `Bike · ${formatMinutes(resolved.cardio.targetMinutes, resolved.cardio.targetMinutesMax)} easy`
+      ? `${resolved.cardio.modality.replace(/_/g, " ")} · ${formatMinutes(resolved.cardio.targetMinutes, resolved.cardio.targetMinutesMax)} easy`
       : null,
   };
 }

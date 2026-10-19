@@ -57,7 +57,7 @@ on conflict (slug) do update set name = excluded.name, category = excluded.categ
   video_url = excluded.video_url, animation_url = excluded.animation_url, instructions = excluded.instructions;
 
 insert into public.program_days (program_block_id, day_of_week, name, full_name, session_type, notes, sort_order)
-select (select id from public.program_blocks where slug = 'phase-1-foundation'), v.* from (values
+select (select id from public.program_blocks where slug = 'phase-1-foundation'), v.day_of_week::int, v.name, v.full_name, v.session_type, v.notes::text, v.sort_order::int from (values
   (1, 'Upper Strength', 'Upper Strength', 'lifting', null, 1),
   (2, 'Lower Strength + Movement', 'Lower Strength + Movement Foundation', 'lifting', null, 2),
   (3, 'Upper Hypertrophy', 'Upper Hypertrophy', 'lifting', null, 3),
@@ -72,9 +72,10 @@ on conflict (program_block_id, day_of_week) do update set name = excluded.name, 
 insert into public.exercise_prescriptions (key, program_day_id, exercise_id, section, sort_order, sets, sets_max,
   rep_min, rep_max, duration_seconds, duration_seconds_max, per_side, rest_seconds, target_rir_min, target_rir_max,
   progression_type, load_increment, notes, is_optional)
-select v.key, pd.id, e.id, v.section, v.sort_order, v.sets, v.sets_max, v.rep_min, v.rep_max, v.duration_seconds,
-  v.duration_seconds_max, v.per_side, v.rest_seconds, v.target_rir_min, v.target_rir_max, v.progression_type,
-  v.load_increment, v.notes, v.is_optional
+select v.key, pd.id, e.id, v.section, v.sort_order::int, v.sets::int, v.sets_max::int, v.rep_min::int,
+  v.rep_max::int, v.duration_seconds::int, v.duration_seconds_max::int, v.per_side::boolean, v.rest_seconds::int,
+  v.target_rir_min::numeric, v.target_rir_max::numeric, v.progression_type, v.load_increment::numeric,
+  v.notes::text, v.is_optional::boolean
 from (values
   ('mon-bench-press', 1, 'bench-press', 'main', 1, 4, null, 4, 6, null, null, false, 180, 2, 2, 'double_progression', 5, null, false),
   ('mon-pull-up', 1, 'pull-up', 'main', 2, 4, null, 5, 8, null, null, false, 120, 2, 2, 'assistance_reduction', 5, 'Log assistance. Enter 0 when unassisted.', false),
@@ -142,7 +143,8 @@ on conflict (key) do update set program_day_id = excluded.program_day_id, exerci
 
 insert into public.cardio_prescriptions (program_block_id, week_number, day_of_week, modality, target_minutes,
   target_minutes_max, target_rpe_min, target_rpe_max, notes)
-select (select id from public.program_blocks where slug = 'phase-1-foundation'), v.* from (values
+select (select id from public.program_blocks where slug = 'phase-1-foundation'), v.week_number::int, v.day_of_week::int, v.modality, v.target_minutes::int,
+  v.target_minutes_max::int, v.target_rpe_min::int, v.target_rpe_max::int, v.notes::text from (values
   (1, 1, 'bike', 15, null, 2, 3, 'Easy, conversational effort.'),
   (1, 3, 'bike', 20, null, 2, 3, 'Easy, conversational effort.'),
   (1, 5, 'bike', 15, 20, 2, 3, 'Easy, conversational effort.'),

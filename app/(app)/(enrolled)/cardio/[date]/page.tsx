@@ -10,8 +10,8 @@ import { resolveToday } from "@/lib/training/schedule";
 
 export default async function CardioPage({ params }: PageProps<"/cardio/[date]">) {
   const { date } = await params;
-  const { user, supabase, program, enrollment } = await getAppContext();
-  const today = resolveToday(program.block, enrollment!, await serverNow());
+  const { user, supabase, program, trainingEnrollment } = await getAppContext();
+  const today = resolveToday(program.block, trainingEnrollment!, await serverNow());
 
   // Cardio is logged for today's prescription only.
   if (today.status !== "active" || today.date !== date || !today.resolved.cardio) redirect("/today");
@@ -46,7 +46,7 @@ export default async function CardioPage({ params }: PageProps<"/cardio/[date]">
       blockId={program.blockId}
       userId={user.id}
       prescription={resolved.cardio!}
-      allowModalityChoice={resolved.dayOfWeek === 6}
+      allowModalityChoice={true}
       isDeload={resolved.isDeload}
     />
   );

@@ -68,6 +68,16 @@ export function getNextPrescription(input: NextPrescriptionInput): Recommendatio
     return { kind: "first_session", recommendedWeight: null, reason, source: null };
   }
 
+  // Retain prior strength history at phase boundaries without automatically
+  // advancing loads against a new set-and-rep prescription.
+  if (source.prescriptionKey !== prescription.key &&
+      (type === "double_progression" || type === "assistance_reduction")) {
+    return {
+      kind: "same", recommendedWeight: referenceWeight(source.sets, exercise.loadDirection),
+      reason: "New training cycle — re-establish a comfortable working load", source,
+    };
+  }
+
   if (type === "bodyweight_reps") {
     return { kind: "bodyweight", recommendedWeight: null, reason: "Beat last performance", source };
   }

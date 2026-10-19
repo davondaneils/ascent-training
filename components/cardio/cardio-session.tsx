@@ -1,6 +1,7 @@
 "use client";
 
-import { Bike, Footprints, X } from "lucide-react";
+import { Bike, Footprints, Waves, Mountain, PersonStanding, X } from "lucide-react";
+import { useState } from "react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { ProgressRing } from "@/components/shared/progress-ring";
@@ -19,7 +20,28 @@ import { cn } from "@/lib/utils";
 const MODALITY: Record<CardioModality, { label: string; Icon: typeof Bike }> = {
   bike: { label: "Bike", Icon: Bike },
   incline_walk: { label: "Incline walk", Icon: Footprints },
+  run_walk: { label: "Easy run / walk", Icon: PersonStanding },
+  run: { label: "Easy run", Icon: PersonStanding },
+  swim: { label: "Supervised swim", Icon: Waves },
+  hike: { label: "Long walk / hike", Icon: Mountain },
+  loaded_hike: { label: "Gradual pack hike", Icon: Mountain },
 };
+const ADVANCED: readonly CardioModality[] = ["run_walk", "run", "swim", "loaded_hike"];
+
+function safeAlternatives(prescribed: CardioModality): CardioModality[] {
+  const options: CardioModality[] = [prescribed, "bike", "incline_walk"];
+  if (prescribed === "run") options.push("run_walk");
+  if (prescribed === "loaded_hike") options.push("hike");
+  return [...new Set(options)];
+}
+
+function readinessNote(modality: CardioModality): string | null {
+  if (modality === "run_walk") return "I can walk 40 minutes comfortably, have no current pain, and will alternate easy jogs with walks. Otherwise I will select walking or cycling.";
+  if (modality === "run") return "I have already tolerated multiple run/walk sessions without pain or unusual fatigue. Otherwise I will use run/walk or walking.";
+  if (modality === "swim") return "I have a safe pool with appropriate supervision or a qualified instructor. I will not swim alone or practice breath-holding.";
+  if (modality === "loaded_hike") return "I have already completed comfortable unloaded hikes. My pack is initially empty or very light and I can stop or turn back safely.";
+  return null;
+}
 
 interface Props {
   logId: string;
@@ -36,6 +58,7 @@ interface Props {
 
 export function CardioSessionView({ logId, date, weekNumber, blockId, userId, prescription, allowModalityChoice, isDeload, persist = true }: Props) {
   const router = useRouter();
+  const [readinessConfirmed, setReadinessConfirmed] = useState(false);
   const [session, dispatch, restored] = useCardioSession(
     createCardioSession({ logId, date, modality: prescription.modality, targetMinutes: prescription.targetMinutes }),
   );
@@ -46,6 +69,8 @@ export function CardioSessionView({ logId, date, weekNumber, blockId, userId, pr
   const left = Math.max(0, targetMs - elapsed);
   const target = formatMinutes(prescription.targetMinutes, prescription.targetMinutesMax);
   const { label, Icon } = MODALITY[session.modality];
+  const preflight = readinessNote(session.modality);
+  const canStart = !ADVANCED.includes(session.modality) || readinessConfirmed;
 
   if (!restored) return <div className="min-h-dvh" aria-busy="true" />;
 
@@ -124,13 +149,13 @@ export function CardioSessionView({ logId, date, weekNumber, blockId, userId, pr
                   <div className="flex flex-col gap-1">
                     <p className="type-display">{target}</p>
                     <p className="type-body text-text-secondary">
-                      Easy · Target RPE {prescription.targetRpeMin}–{prescription.targetRpeMax}
+                      Controlled · Target RPE {prescription.targetRpeMin}–{prescription.targetRpeMax}
                     </p>
                   </div>
                   {prescription.notes && <p className="type-body text-text-secondary">{prescription.notes}</p>}
                   {allowModalityChoice && (
                     <div role="radiogroup" aria-label="Modality" className="grid grid-cols-2 gap-2">
-                      {(Object.keys(MODALITY) as CardioModality[]).map((m) => {
+                      {safeAlternatives(prescription.modality).map((m) => {
                         const M = MODALITY[m];
                         const on = session.modality === m;
                         return (
@@ -139,7 +164,7 @@ export function CardioSessionView({ logId, date, weekNumber, blockId, userId, pr
                             type="button"
                             role="radio"
                             aria-checked={on}
-                            onClick={() => dispatch({ type: "set_modality", modality: m })}
+                            onClick={() => { dispatch({ type: "set_modality", modality: m }); setReadinessConfirmed(false); }}
                             className={cn(
                               "flex h-14 items-center justify-center gap-2 rounded-2xl border text-[15px] font-medium transition-colors",
                               on ? "border-accent bg-accent-soft text-accent" : "border-border-subtle bg-surface text-text-primary",
@@ -153,9 +178,22 @@ export function CardioSessionView({ logId, date, weekNumber, blockId, userId, pr
                     </div>
                   )}
                 </div>
-                <Button size="xl" onClick={() => dispatch({ type: "start", now: Date.now() })}>
-                  Start
-                </Button>
+                <div className="flex flex-col gap-4">
+                  {preflight && (
+                    <label className="flex items-start gap-3 rounded-2xl border border-border-subtle bg-surface p-4">
+                      <input type="checkbox" checked={readinessConfirmed}
+                        onChange={(event) => setReadinessConfirmed(event.target.checked)}
+                        className="mt-1 size-5 shrink-0 accent-accent" />
+                      <span className="text-[14px] leading-relaxed text-text-secondary">
+                        <strong className="text-text-primary">Safety preflight.</strong> {preflight}
+                      </span>
+                    </label>
+                  )}
+                  <Button size="xl" disabled={!canStart}
+                    onClick={() => dispatch({ type: "start", now: Date.now() })}>
+                    {canStart ? "Start session" : "Confirm readiness or choose an alternative"}
+                  </Button>
+                </div>
               </div>
             )}
 

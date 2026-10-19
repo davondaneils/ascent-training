@@ -92,11 +92,24 @@ interface BlockRow {
 const num = (v: number | string | null): number | null => (v === null ? null : Number(v));
 
 export async function loadActiveProgram(supabase: SupabaseClient): Promise<LoadedProgram> {
+  return loadProgramBy(supabase, "is_active", true);
+}
+
+/** Fetch the enrolled cycle or a historical workout's original prescriptions. */
+export async function loadProgramBySlug(supabase: SupabaseClient, slug: string): Promise<LoadedProgram> {
+  return loadProgramBy(supabase, "slug", slug);
+}
+export async function loadProgramById(supabase: SupabaseClient, id: string): Promise<LoadedProgram> {
+  return loadProgramBy(supabase, "id", id);
+}
+async function loadProgramBy(
+  supabase: SupabaseClient, field: "is_active" | "slug" | "id", value: string | boolean,
+): Promise<LoadedProgram> {
   const [blockRes, exerciseRes] = await Promise.all([
     supabase
       .from("program_blocks")
       .select("id, slug, name, description, duration_weeks, deload_weeks, program_days(*, exercise_prescriptions(*)), cardio_prescriptions(*)")
-      .eq("is_active", true)
+      .eq(field, value)
       .single<BlockRow>(),
     supabase.from("exercises").select("*").returns<ExerciseRow[]>(),
   ]);
