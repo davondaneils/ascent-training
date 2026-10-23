@@ -4,6 +4,7 @@ import {
   cardioElapsedMs,
   cardioReducer,
   createCardioSession,
+  isQualityRun,
   type CardioAction,
   type CardioSession,
 } from "@/lib/training/cardio";
@@ -70,5 +71,27 @@ describe("cardio session", () => {
     expect(actualMinutes(30_000)).toBe(1);
     expect(actualMinutes(20 * MIN + 29_000)).toBe(20);
     expect(actualMinutes(20 * MIN + 31_000)).toBe(21);
+  });
+  it("records an optional pack weight for loaded hikes only, within bounds", () => {
+    const hike = createCardioSession({ logId: "h", date: "2027-10-02", modality: "loaded_hike", targetMinutes: 75 });
+    let s = run(hike, { type: "start", now: T0 }, { type: "finish", now: T0 + MIN });
+    expect(s.packWeightKg).toBeNull();
+    s = run(s, { type: "set_pack_weight", kg: 4.25 });
+    expect(s.packWeightKg).toBe(4.3);
+    expect(run(s, { type: "set_pack_weight", kg: 41 }).packWeightKg).toBe(4.3);
+    expect(run(s, { type: "set_pack_weight", kg: -1 }).packWeightKg).toBe(4.3);
+    expect(run(s, { type: "set_pack_weight", kg: null }).packWeightKg).toBeNull();
+    const bike = run(fresh(), { type: "start", now: T0 }, { type: "finish", now: T0 + MIN }, { type: "set_pack_weight", kg: 5 });
+    expect(bike.packWeightKg).toBeNull();
+    // Old snapshots without the field still save.
+    const old = { ...run(hike, { type: "start", now: T0 }, { type: "finish", now: T0 + MIN }) } as CardioSession;
+    delete old.packWeightKg;
+    expect(run(old, { type: "rate", rpe: 3 }, { type: "saved" }).phase).toBe("saved");
+  });
+
+  it("treats only a run above easy effort as a quality session", () => {
+    expect(isQualityRun({ modality: "run", targetRpeMax: 6 })).toBe(true);
+    expect(isQualityRun({ modality: "run", targetRpeMax: 4 })).toBe(false);
+    expect(isQualityRun({ modality: "loaded_hike", targetRpeMax: 6 })).toBe(false);
   });
 });

@@ -140,9 +140,17 @@ function progressFixture(): ProgressData {
       workoutId: `d${w}`, date: fri, weekNumber: w + 1, isDeload: deload, prescriptionKey: "fri-dip", exerciseSlug: "dip",
       sets: [0, 1, 2].map((i) => ({ setNumber: i + 1, weight: Math.max(0, 40 - w * 5), reps: 7 + (w % 3) })),
     });
+    lifts.push({
+      workoutId: `c${w}`, date: mon, weekNumber: w + 1, isDeload: deload, prescriptionKey: "readiness:1:carry", exerciseSlug: "farmer-carry",
+      sets: [0, 1].map((i) => ({ setNumber: i + 1, weight: 30 + Math.floor(w / 3) * 5, reps: null })),
+    });
     for (let d = 0; d < 5; d++) if (!(w === 2 && d === 3)) completed.push(addDays(mon, d));
     for (const [d, m] of [[0, 15 + w * 2], [2, 20 + w * 2], [4, 18 + w * 2], [5, 30 + w * 4]] as const) {
-      cardio.push({ date: addDays(mon, d), actualMinutes: deload ? Math.round(m * 0.65) : m, rpe: 2 + ((w + d) % 3 === 0 ? 1 : 0) });
+      const hike = d === 5;
+      cardio.push({
+        date: addDays(mon, d), actualMinutes: deload ? Math.round(m * 0.65) : m, rpe: 2 + ((w + d) % 3 === 0 ? 1 : 0),
+        modality: hike ? "loaded_hike" : "bike", packWeightKg: hike ? 2 + Math.floor(w / 2) : null,
+      });
     }
   }
   return { lifts, cardio, completedLiftingDates: completed };

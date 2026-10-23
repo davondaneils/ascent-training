@@ -1,7 +1,15 @@
 // Cardio session state machine: ready → running ⇄ paused → rating → saved. Pure; time is passed in.
 
 import { elapsedMs, pauseStopwatch, resumeStopwatch, startStopwatch, type Stopwatch } from "./rest-timer";
-import type { CardioModality } from "./types";
+import type { CardioModality, CardioPrescription } from "./types";
+
+/** Easy aerobic work is always RPE ≤ 4; a run prescribed above that is the weekly quality session. */
+export function isQualityRun(p: Pick<CardioPrescription, "modality" | "targetRpeMax">): boolean {
+  return p.modality === "run" && p.targetRpeMax > 4;
+}
+
+/** Upper bound for a recorded pack, kg. Matches the cardio_logs check constraint. */
+export const MAX_PACK_KG = 40;
 
 export type CardioPhase = "ready" | "running" | "paused" | "rating" | "saved";
 
@@ -15,6 +23,8 @@ export interface CardioSession {
   /** Frozen when the user taps Finish. */
   finalElapsedMs: number | null;
   rpe: number | null;
+  /** Loaded hikes only: pack weight in kg, optional. Absent in snapshots saved before it existed. */
+  packWeightKg?: number | null;
 }
 
 export type CardioAction =
@@ -25,6 +35,7 @@ export type CardioAction =
   | { type: "finish"; now: number }
   | { type: "back_to_timer"; now: number }
   | { type: "rate"; rpe: number }
+  | { type: "set_pack_weight"; kg: number | null }
   | { type: "saved" };
 
 export function createCardioSession(input: {
@@ -33,7 +44,7 @@ export function createCardioSession(input: {
   modality: CardioModality;
   targetMinutes: number;
 }): CardioSession {
-  return { ...input, phase: "ready", stopwatch: null, finalElapsedMs: null, rpe: null };
+  return { ...input, phase: "ready", stopwatch: null, finalElapsedMs: null, rpe: null, packWeightKg: null };
 }
 
 export function cardioElapsedMs(s: CardioSession, now: number): number {
@@ -73,6 +84,10 @@ export function cardioReducer(s: CardioSession, a: CardioAction): CardioSession 
       return s.phase === "rating" ? { ...s, phase: "paused", finalElapsedMs: null } : s;
     case "rate":
       return s.phase === "rating" && a.rpe >= 1 && a.rpe <= 10 ? { ...s, rpe: a.rpe } : s;
+    case "set_pack_weight":
+      if (s.phase !== "rating" || s.modality !== "loaded_hike") return s;
+      if (a.kg !== null && !(Number.isFinite(a.kg) && a.kg >= 0 && a.kg <= MAX_PACK_KG)) return s;
+      return { ...s, packWeightKg: a.kg === null ? null : Math.round(a.kg * 10) / 10 };
     case "saved":
       return s.phase === "rating" && s.rpe !== null ? { ...s, phase: "saved" } : s;
   }

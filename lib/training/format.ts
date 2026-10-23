@@ -51,6 +51,14 @@ export function formatSetsCompact(sets: Pick<LoggedSet, "weight" | "reps">[], lo
   return sets.map((s) => formatSet(s, loadType)).join(" · ");
 }
 
+/** Timed holds and carries: "2 holds", or "2 holds · 40 lb each" when a load was recorded. */
+export function formatHolds(sets: Pick<LoggedSet, "weight">[], loadType: LoadType): string {
+  const count = `${sets.length} hold${sets.length === 1 ? "" : "s"}`;
+  const loads = sets.map((s) => s.weight).filter((w): w is number => w !== null && w > 0);
+  if (loadType === "bodyweight" || loadType === "none" || loads.length === 0) return count;
+  return `${count} · ${Math.max(...loads)} lb${loadType === "dumbbell" ? " each" : ""}`;
+}
+
 export function weightLabel(loadType: LoadType): string {
   if (loadType === "assisted") return "Assistance";
   if (loadType === "dumbbell") return "Weight (each)";

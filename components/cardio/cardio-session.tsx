@@ -11,7 +11,7 @@ import { SyncStatus } from "@/components/workout/sync-status";
 import { useCardioSession } from "@/hooks/use-cardio-session";
 import { useNow } from "@/hooks/use-now";
 import { getOutbox } from "@/lib/offline/client-outbox";
-import { actualMinutes, cardioElapsedMs, createCardioSession } from "@/lib/training/cardio";
+import { MAX_PACK_KG, actualMinutes, cardioElapsedMs, createCardioSession, isQualityRun } from "@/lib/training/cardio";
 import { formatMinutes } from "@/lib/training/format";
 import { formatClock } from "@/lib/training/rest-timer";
 import type { CardioModality, CardioPrescription } from "@/lib/training/types";
@@ -35,7 +35,8 @@ function safeAlternatives(prescribed: CardioModality): CardioModality[] {
   return [...new Set(options)];
 }
 
-function readinessNote(modality: CardioModality): string | null {
+function readinessNote(modality: CardioModality, quality: boolean): string | null {
+  if (modality === "run" && quality) return "I have tolerated several easy runs this cycle without pain or unusual fatigue. I will keep the warm-up easy, stay controlled on the harder parts, and drop to easy running or walking if anything hurts.";
   if (modality === "run_walk") return "I can walk 40 minutes comfortably, have no current pain, and will alternate easy jogs with walks. Otherwise I will select walking or cycling.";
   if (modality === "run") return "I have already tolerated multiple run/walk sessions without pain or unusual fatigue. Otherwise I will use run/walk or walking.";
   if (modality === "swim") return "I have a safe pool with appropriate supervision or a qualified instructor. I will not swim alone or practice breath-holding.";
@@ -69,7 +70,12 @@ export function CardioSessionView({ logId, date, weekNumber, blockId, userId, pr
   const left = Math.max(0, targetMs - elapsed);
   const target = formatMinutes(prescription.targetMinutes, prescription.targetMinutesMax);
   const { label, Icon } = MODALITY[session.modality];
-  const preflight = readinessNote(session.modality);
+  // The quality prescription applies only to the run itself; every alternative is easy aerobic work.
+  const quality = isQualityRun(prescription) && session.modality === prescription.modality;
+  const rpeRange = quality || session.modality === prescription.modality
+    ? `${prescription.targetRpeMin}–${prescription.targetRpeMax}`
+    : "2–4";
+  const preflight = readinessNote(session.modality, quality);
   const canStart = !ADVANCED.includes(session.modality) || readinessConfirmed;
 
   if (!restored) return <div className="min-h-dvh" aria-busy="true" />;
@@ -91,6 +97,7 @@ export function CardioSessionView({ logId, date, weekNumber, blockId, userId, pr
           target_minutes: next.targetMinutes,
           actual_minutes: actualMinutes(cardioElapsedMs(next, Date.now())),
           rpe: next.rpe,
+          ...(next.modality === "loaded_hike" ? { pack_weight_kg: next.packWeightKg ?? null } : {}),
           completed_at: new Date().toISOString(),
         },
       });
@@ -149,10 +156,13 @@ export function CardioSessionView({ logId, date, weekNumber, blockId, userId, pr
                   <div className="flex flex-col gap-1">
                     <p className="type-display">{target}</p>
                     <p className="type-body text-text-secondary">
-                      Controlled · Target RPE {prescription.targetRpeMin}–{prescription.targetRpeMax}
+                      {quality ? "Easy warm-up, then controlled harder parts" : "Controlled"} · Target RPE {rpeRange}
                     </p>
                   </div>
                   {prescription.notes && <p className="type-body text-text-secondary">{prescription.notes}</p>}
+                  {isQualityRun(prescription) && !quality && (
+                    <p className="type-body text-text-secondary">Alternative chosen: keep the whole session easy and conversational.</p>
+                  )}
                   {allowModalityChoice && (
                     <div role="radiogroup" aria-label="Modality" className="grid grid-cols-2 gap-2">
                       {safeAlternatives(prescription.modality).map((m) => {
@@ -200,7 +210,7 @@ export function CardioSessionView({ logId, date, weekNumber, blockId, userId, pr
             {(session.phase === "running" || session.phase === "paused") && (
               <div className="flex flex-1 flex-col items-center justify-between gap-6 pt-4">
                 <p className="type-meta text-text-tertiary">
-                  {label} · {target} · RPE {prescription.targetRpeMin}–{prescription.targetRpeMax}
+                  {label} · {target} · RPE {rpeRange}
                 </p>
                 <ProgressRing progress={elapsed / targetMs} radius={128}>
                   <p className="type-meta tracking-wide text-text-tertiary">{session.phase === "paused" ? "PAUSED" : "ELAPSED"}</p>
@@ -266,6 +276,9 @@ export function CardioSessionView({ logId, date, weekNumber, blockId, userId, pr
                       </button>
                     ))}
                   </div>
+                  {session.modality === "loaded_hike" && (
+                    <PackWeight value={session.packWeightKg ?? null} onChange={(kg) => dispatch({ type: "set_pack_weight", kg })} />
+                  )}
                 </div>
                 <div className="flex flex-col gap-2">
                   <Button size="xl" disabled={session.rpe === null} onClick={saveLog} className={cn(session.rpe === null && "opacity-40")}>
@@ -281,5 +294,37 @@ export function CardioSessionView({ logId, date, weekNumber, blockId, userId, pr
         </AnimatePresence>
       </div>
     </MotionConfig>
+  );
+}
+
+/** Optional pack weight for loaded hikes, kg. Left blank, the hike is saved without a load. */
+function PackWeight({ value, onChange }: { value: number | null; onChange: (kg: number | null) => void }) {
+  const [text, setText] = useState(value === null ? "" : String(value));
+  return (
+    <div className="flex flex-col gap-2">
+      <label htmlFor="pack-weight" className="type-meta text-text-tertiary">
+        Pack weight · optional
+      </label>
+      <div className="flex items-baseline gap-2">
+        <input
+          id="pack-weight"
+          inputMode="decimal"
+          enterKeyHint="done"
+          autoComplete="off"
+          value={text}
+          placeholder="—"
+          onChange={(e) => {
+            const raw = e.target.value.replace(",", ".").replace(/[^\d.]/g, "");
+            const n = Number(raw);
+            if (raw !== "" && !(Number.isFinite(n) && n <= MAX_PACK_KG)) return;
+            setText(raw);
+            onChange(raw === "" ? null : n);
+          }}
+          className="h-14 w-28 rounded-2xl border border-border-subtle bg-surface px-4 text-xl font-semibold tabular-nums text-text-primary outline-none placeholder:text-text-tertiary"
+        />
+        <span className="text-lg text-text-secondary">kg</span>
+      </div>
+      <p className="text-[13px] text-text-tertiary">Add load only in small steps when the last hike recovered well.</p>
+    </div>
   );
 }

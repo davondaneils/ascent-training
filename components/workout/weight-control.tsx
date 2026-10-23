@@ -11,9 +11,11 @@ interface Props {
   onChange: (v: number | null) => void;
   step: number;
   loadType: LoadType;
+  /** Timed carries: the load is recorded when entered but never required. */
+  optional?: boolean;
 }
 
-export function WeightControl({ value, onChange, step, loadType }: Props) {
+export function WeightControl({ value, onChange, step, loadType, optional = false }: Props) {
   const bump = (dir: 1 | -1) => {
     const next = Math.max(0, (value ?? 0) + dir * step);
     onChange(Number(next.toFixed(2)));
@@ -22,6 +24,7 @@ export function WeightControl({ value, onChange, step, loadType }: Props) {
     <div className="flex flex-col gap-2">
       <label htmlFor="weight" className="type-meta text-text-tertiary">
         {weightLabel(loadType)}
+        {optional && <span className="font-normal"> · optional</span>}
       </label>
       <div className="flex items-center gap-3">
         <Button type="button" variant="outline" size="icon-touch" className="size-14 rounded-2xl border-border-subtle bg-surface" onClick={() => bump(-1)} aria-label={`Decrease by ${step}`}>

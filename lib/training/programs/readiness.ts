@@ -119,7 +119,7 @@ function carry(blockSlug: string, dow: number, seconds: number): Prescription {
     sets: 2, setsMax: null, repMin: null, repMax: null, durationSeconds: seconds,
     durationSecondsMax: null, perSide: false, restSeconds: 90,
     targetRirMin: null, targetRirMax: null, progressionType: "none", loadIncrement: null,
-    notes: "Light, controlled carries on a clear path. Choose a load you can walk with upright; record tested loaded-carry performance separately.",
+    notes: "Light, controlled carries on a clear path. Choose a load you can walk with upright and record it per hand. Add load only in small steps when every carry stays tall and pain-free; record tested loaded-carry performance separately.",
     isOptional: false,
   };
 }
@@ -131,6 +131,53 @@ function movement(blockSlug: string, dow: number, order: number, slug: string,
     sets: 2, setsMax: null, repMin: reps, repMax: reps, durationSeconds: null, durationSecondsMax: null,
     perSide, restSeconds: null, targetRirMin: null, targetRirMax: null, progressionType: "none",
     loadIncrement: null, notes: "Slow and comfortable. No forcing range.", isOptional: false,
+  };
+}
+
+/** The first cycle whose Tuesday modality is a continuous run (Year 2, third quarter). */
+const FIRST_RUN_CYCLE = 6;
+const WARM_UP_MINUTES = 10;
+const PAIN_RULE = " If anything hurts, or the hard parts feel strained, drop to easy running or walking for the rest of the session.";
+
+type QualityRun = { notes: string; rpeMin: number; rpeMax: number; workMinutes: number };
+
+/**
+ * One weekly quality run, replacing the easy Tuesday run in run cycles only. Never in recovery
+ * weeks. The first run cycle is relaxed strides; later cycles alternate short tempo and short
+ * intervals, rising slowly within the cycle (one step per mesocycle) and across cycles, capped.
+ * The work always fits inside the session after a 10-minute easy warm-up.
+ */
+export function qualityRun(cycleIndex: number, week: number, targetMinutes: number): QualityRun | null {
+  if (cycleIndex < FIRST_RUN_CYCLE || week === 4 || week === 8 || week === 13) return null;
+  const level = cycleIndex - FIRST_RUN_CYCLE; // 0..13
+  const meso = week < 4 ? 0 : week < 8 ? 1 : 2;
+  const room = targetMinutes - WARM_UP_MINUTES - 5; // keep at least 5 easy minutes to finish
+  const open = `Quality run: ${WARM_UP_MINUTES} min very easy jogging first.`;
+  const close = " Jog or walk easily for the remaining time. Only if your easy runs feel comfortable this week; otherwise keep the whole session easy.";
+
+  if (level === 0) {
+    const reps = 4 + meso;
+    return {
+      notes: `${open} Then ${reps} × 20 sec relaxed, quicker strides (RPE 4–5, smooth, never a sprint) with a full walk back between.${close}${PAIN_RULE}`,
+      rpeMin: 3, rpeMax: 5, workMinutes: reps,
+    };
+  }
+  if (week % 2 === 1) {
+    let tempo = Math.min(20, 6 + 2 * (level - 1) + 2 * meso);
+    while (tempo > 4 && tempo > room) tempo -= 2;
+    const shape = tempo <= 10 ? `2 × ${tempo / 2} min` : `${tempo} min continuous`;
+    return {
+      notes: `${open} Then ${shape} tempo: comfortably hard (RPE 5–6), steady, able to speak in short phrases${tempo <= 10 ? ", with 2 min easy jogging between" : ""}.${close}${PAIN_RULE}`,
+      rpeMin: 3, rpeMax: 6, workMinutes: tempo <= 10 ? tempo + 2 : tempo,
+    };
+  }
+  const repMinutes = level < 6 ? 1 : 2;
+  const start = repMinutes === 1 ? Math.floor(level / 2) : Math.floor((level - 6) / 2);
+  let reps = Math.min(repMinutes === 1 ? 8 : 6, 4 + start + meso);
+  while (reps > 2 && reps * (repMinutes + 2) > room) reps -= 1;
+  return {
+    notes: `${open} Then ${reps} × ${repMinutes} min brisk (RPE 6–7, controlled, not all-out) with 2 min easy jogging or walking after each.${close}${PAIN_RULE}`,
+    rpeMin: 3, rpeMax: 7, workMinutes: reps * (repMinutes + 2),
   };
 }
 
@@ -178,10 +225,12 @@ function weeklyCardio(cycleIndex: number): CardioPrescription[] {
       const caution = mode[i] === "loaded_hike"
         ? ` Suggested maximum load for this cycle: ${year === 2 ? "3–6" : year === 3 ? "5–9" : "8–15"} kg, only after your own gradual progression; never jump to the maximum.`
         : "";
+      const quality = mode[i] === "run" ? qualityRun(cycleIndex, w, minutes) : null;
       out.push({
         weekNumber: w, dayOfWeek: dow, modality: mode[i], targetMinutes: minutes,
-        targetMinutesMax: null, targetRpeMin: 2, targetRpeMax: 4,
-        notes: notes[mode[i]] + caution + (w === 13 ? " Review week: stay fresh for a safe, non-maximal capability assessment." : ""),
+        targetMinutesMax: null, targetRpeMin: quality?.rpeMin ?? 2, targetRpeMax: quality?.rpeMax ?? 4,
+        notes: (quality?.notes ?? notes[mode[i]]) + caution +
+          (w === 13 ? " Review week: stay fresh for a safe, non-maximal capability assessment." : ""),
       });
     }
   }
@@ -189,7 +238,8 @@ function weeklyCardio(cycleIndex: number): CardioPrescription[] {
 }
 
 const carryExercise: Exercise = {
-  slug: "farmer-carry", name: "Farmer's Carry", category: "strength", loadType: "none",
+  // "dumbbell": the logger records the load per hand (optional for this timed carry).
+  slug: "farmer-carry", name: "Farmer's Carry", category: "strength", loadType: "dumbbell",
   loadDirection: "higher_is_harder", imageUrl: null, videoUrl: null,
   animationUrl: null, instructions: "Walk tall with light matched dumbbells; stop when grip, balance or posture deteriorates.",
 };

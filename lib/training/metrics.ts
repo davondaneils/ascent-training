@@ -3,7 +3,7 @@
 import { addDays, dayOfWeek, daysBetween } from "@/lib/dates";
 import { completedSets } from "@/lib/progression/reference";
 import { getCardioForWave } from "./schedule";
-import type { ExercisePerformance, LocalDate, ProgramBlock } from "./types";
+import type { CardioModality, ExercisePerformance, LocalDate, ProgramBlock } from "./types";
 
 // ---------------------------------------------------------------------------
 // Strength
@@ -103,12 +103,57 @@ export function repsSummary(points: RepsPoint[]): string | null {
 }
 
 // ---------------------------------------------------------------------------
+// Carrying: farmer's-carry load per hand and loaded-hike pack weight.
+
+export interface LoadPoint {
+  date: LocalDate;
+  /** Heaviest recorded load that day. */
+  load: number;
+}
+
+function byDateMax(entries: { date: LocalDate; load: number | null | undefined }[]): LoadPoint[] {
+  const byDate = new Map<LocalDate, number>();
+  for (const e of entries) {
+    if (e.load === null || e.load === undefined || e.load <= 0) continue;
+    byDate.set(e.date, Math.max(byDate.get(e.date) ?? 0, e.load));
+  }
+  return [...byDate.entries()].map(([date, load]) => ({ date, load })).sort((a, b) => (a.date < b.date ? -1 : 1));
+}
+
+/** Carry sessions with a recorded load; sets without one (older logs) are skipped. */
+export function carrySeries(history: ExercisePerformance[]): LoadPoint[] {
+  // Carries are timed (reps null), so every logged set counts; history holds completed sets only.
+  return byDateMax(history.flatMap((h) => h.sets.map((s) => ({ date: h.date, load: s.weight }))));
+}
+
+/** Loaded hikes with a recorded pack weight, kg. */
+export function packSeries(logs: CardioLogPoint[]): LoadPoint[] {
+  return byDateMax(logs.filter((l) => l.modality === "loaded_hike").map((l) => ({ date: l.date, load: l.packWeightKg })));
+}
+
+/** "20 → 30 lb over 6 weeks", "Same load for 3 weeks", "First load logged". */
+export function loadSummary(points: LoadPoint[], unit: string): string | null {
+  if (points.length === 0) return null;
+  if (points.length === 1) return "First load logged";
+  const first = points[0];
+  const last = points[points.length - 1];
+  const weeks = Math.max(1, Math.round(daysBetween(first.date, last.date) / 7));
+  const span = `${weeks} week${weeks === 1 ? "" : "s"}`;
+  return first.load === last.load
+    ? `Same load for ${span}`
+    : `${fmt(first.load)} → ${fmt(last.load)} ${unit} over ${span}`;
+}
+
+// ---------------------------------------------------------------------------
 // Cardio
 
 export interface CardioLogPoint {
   date: LocalDate;
   actualMinutes: number;
   rpe: number;
+  modality?: CardioModality;
+  /** Loaded hikes only; null when not recorded. */
+  packWeightKg?: number | null;
 }
 
 export interface WeekMinutes {

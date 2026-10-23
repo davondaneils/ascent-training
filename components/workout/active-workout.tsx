@@ -9,7 +9,7 @@ import { MobilityChecklist, type ChecklistItem } from "@/components/today/mobili
 import { useNow } from "@/hooks/use-now";
 import { useWorkoutSession } from "@/hooks/use-workout-session";
 import { formatWeight } from "@/lib/progression";
-import { formatRest, formatSet, formatSetsCompact } from "@/lib/training/format";
+import { formatHolds, formatRest, formatSet, formatSetsCompact } from "@/lib/training/format";
 import { restProgress } from "@/lib/training/rest-timer";
 import {
   getOverview,
@@ -164,7 +164,13 @@ export function ActiveWorkout({ initialSession, infos, meta, userId, exerciseIdB
                 remainingMs={view.remainingMs}
                 progress={session.rest ? restProgress(session.rest, now) : 1}
                 completedSummary={
-                  lastSet ? `Set ${lastSet.set.setNumber} — ${formatSet(lastSet.set, infos[lastSet.exerciseId].loadType)}` : ""
+                  lastSet
+                    ? `Set ${lastSet.set.setNumber} — ${
+                        infos[lastSet.exerciseId].durationSeconds !== null
+                          ? formatHolds([lastSet.set], infos[lastSet.exerciseId].loadType)
+                          : formatSet(lastSet.set, infos[lastSet.exerciseId].loadType)
+                      }`
+                    : ""
                 }
                 nextTarget={`${exercise.sets.length > 0 ? "" : `${info.name} · `}${targetLine(info, defaultWeight(exercise, info))}`}
                 onExtend={() => dispatch({ type: "extend_rest", now: Date.now() })}
@@ -174,7 +180,7 @@ export function ActiveWorkout({ initialSession, infos, meta, userId, exerciseIdB
             ) : view.kind === "exercise_complete" ? (
               <ExerciseComplete
                 name={info.name}
-                summary={info.durationSeconds ? `${exercise.sets.length} holds` : formatSetsCompact(exercise.sets, info.loadType)}
+                summary={info.durationSeconds ? formatHolds(exercise.sets, info.loadType) : formatSetsCompact(exercise.sets, info.loadType)}
                 next={view.next ? infos[view.next.id] : null}
                 restRemainingMs={view.remainingMs}
                 onContinue={() => dispatch({ type: "continue" })}
@@ -229,7 +235,8 @@ function SetEntry({ exercise, info, setNumber, onEdit, onComplete }: SetEntryPro
   const timed = info.durationSeconds !== null;
   const [weight, setWeight] = useState<number | null>(() => defaultWeight(exercise, info));
   const [reps, setReps] = useState<number | null>(null);
-  const canComplete = (timed || reps !== null) && (!weighted || weight !== null);
+  // A timed hold or carry can always be completed; its load is recorded when entered.
+  const canComplete = timed || (reps !== null && (!weighted || weight !== null));
 
   return (
     <div className="flex flex-1 flex-col gap-5 pb-32 pt-1">
@@ -247,7 +254,7 @@ function SetEntry({ exercise, info, setNumber, onEdit, onComplete }: SetEntryPro
             <p className="flex items-baseline gap-2 text-[15px]">
               <span className="type-meta text-text-tertiary">Previous</span>
               <span className="tabular-nums text-text-primary">
-                {timed ? `${info.previous.length} holds` : info.previous.map((s) => formatSet(s, info.loadType).replace(" × ", "×")).join(" · ")}
+                {timed ? formatHolds(info.previous, info.loadType) : info.previous.map((s) => formatSet(s, info.loadType).replace(" × ", "×")).join(" · ")}
               </span>
             </p>
           ) : (
@@ -277,14 +284,14 @@ function SetEntry({ exercise, info, setNumber, onEdit, onComplete }: SetEntryPro
                   aria-label={`Edit set ${s.setNumber}`}
                   className="h-9 shrink-0 rounded-full border border-border-subtle bg-surface px-3 text-[13px] tabular-nums text-text-secondary"
                 >
-                  {timed ? `✓ ${s.setNumber}` : formatSet(s, info.loadType).replace(" × ", "×")}
+                  {timed ? `✓ ${s.setNumber}${weighted && s.weight !== null ? ` · ${formatWeight(s.weight)}` : ""}` : formatSet(s, info.loadType).replace(" × ", "×")}
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {weighted && <WeightControl value={weight} onChange={setWeight} step={info.loadIncrement ?? 5} loadType={info.loadType} />}
+        {weighted && <WeightControl value={weight} onChange={setWeight} step={info.loadIncrement ?? 5} loadType={info.loadType} optional={timed} />}
         {timed ? (
           <HoldTimer seconds={info.durationSeconds!} perSide={info.perSide} />
         ) : (

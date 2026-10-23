@@ -4,6 +4,7 @@ import {
   getDoubleProgressionNextWeight,
   getNextPrescription,
   getPreviousExercisePerformance,
+  previousLoadedHold,
 } from "@/lib/progression";
 import { referenceWeight } from "@/lib/progression/reference";
 import { PHASE_1 } from "@/lib/training/programs/phase-1";
@@ -239,5 +240,31 @@ describe("previous performance", () => {
       perf("mon-bench-press", "bench-press", "2026-10-26", [{ setNumber: 1, weight: 185, reps: null }]),
     ];
     expect(getPreviousExercisePerformance(history, "mon-bench-press", "bench-press")?.date).toBe("2026-10-19");
+  });
+});
+
+describe("previous carry load", () => {
+  const carry = (date: string, key: string, weights: (number | null)[]) =>
+    perf(key, "farmer-carry", date, weights.map((weight, i) => ({ setNumber: i + 1, weight, reps: null })));
+
+  it("finds the last carry that recorded a load, same slot first", () => {
+    const history = [
+      carry("2027-01-04", "a:1:carry", [30, 30]),
+      carry("2027-01-08", "a:5:carry", [35, 35]),
+      carry("2027-01-11", "a:1:carry", [null, null]), // logged before loads were recorded
+    ];
+    expect(previousLoadedHold(history, "a:1:carry", "farmer-carry")?.map((s) => s.weight)).toEqual([30, 30]);
+    expect(previousLoadedHold(history, "b:3:carry", "farmer-carry")?.map((s) => s.weight)).toEqual([35, 35]);
+    expect(previousLoadedHold([carry("2027-01-11", "a:1:carry", [null])], "a:1:carry", "farmer-carry")).toBeNull();
+  });
+
+  it("never recommends a heavier carry automatically", () => {
+    const block = READINESS_BLOCKS[0];
+    const p = block.days.flatMap((d) => d.prescriptions).find((x) => x.key.endsWith(":carry"))!;
+    const rec = getNextPrescription({
+      exercise: block.exercises.find((e) => e.slug === "farmer-carry")!, prescription: p,
+      history: [carry("2027-01-04", p.key, [30, 30])], isDeloadWeek: false,
+    });
+    expect(rec.recommendedWeight).toBeNull();
   });
 });

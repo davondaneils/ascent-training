@@ -2,13 +2,14 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CardioLogPoint } from "@/lib/training/metrics";
-import type { ExercisePerformance, LocalDate } from "@/lib/training/types";
+import type { CardioModality, ExercisePerformance, LocalDate } from "@/lib/training/types";
 import type { LoadedProgram } from "./program";
 import { loadExerciseHistory } from "./workouts";
 
 /** Exercises the Progress screen charts. */
 export const STRENGTH_LIFTS = ["bench-press", "paused-bench-press", "leg-press", "romanian-deadlift", "hack-squat"] as const;
 export const RELATIVE_LIFTS = { "pull-up": ["pull-up", "strict-pull-up"], dip: ["dip"] } as const;
+export const CARRY = "farmer-carry";
 
 const NO_WORKOUT = "00000000-0000-0000-0000-000000000000";
 
@@ -23,7 +24,7 @@ export async function loadProgressData(
   program: LoadedProgram,
   userId: string,
 ): Promise<ProgressData> {
-  const slugs = [...STRENGTH_LIFTS, ...RELATIVE_LIFTS["pull-up"], ...RELATIVE_LIFTS.dip];
+  const slugs = [...STRENGTH_LIFTS, ...RELATIVE_LIFTS["pull-up"], ...RELATIVE_LIFTS.dip, CARRY];
   const [lifts, cardio, workouts] = await Promise.all([
     loadExerciseHistory(supabase, program, {
       userId,
@@ -33,10 +34,13 @@ export async function loadProgressData(
     }),
     supabase
       .from("cardio_logs")
-      .select("scheduled_date, actual_minutes, rpe")
+      .select("scheduled_date, actual_minutes, rpe, modality, pack_weight_kg")
       .eq("user_id", userId)
       .order("scheduled_date")
-      .returns<{ scheduled_date: LocalDate; actual_minutes: number; rpe: number }[]>(),
+      .returns<{
+        scheduled_date: LocalDate; actual_minutes: number; rpe: number;
+        modality: CardioModality; pack_weight_kg: number | string | null;
+      }[]>(),
     supabase
       .from("workouts")
       .select("scheduled_date")
@@ -49,7 +53,11 @@ export async function loadProgressData(
 
   return {
     lifts,
-    cardio: (cardio.data ?? []).map((r) => ({ date: r.scheduled_date, actualMinutes: r.actual_minutes, rpe: r.rpe })),
+    cardio: (cardio.data ?? []).map((r) => ({
+      date: r.scheduled_date, actualMinutes: r.actual_minutes, rpe: r.rpe, modality: r.modality,
+      // numeric columns arrive as strings from PostgREST.
+      packWeightKg: r.pack_weight_kg === null ? null : Number(r.pack_weight_kg),
+    })),
     completedLiftingDates: (workouts.data ?? []).map((w) => w.scheduled_date),
   };
 }
