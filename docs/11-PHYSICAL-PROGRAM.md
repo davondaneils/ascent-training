@@ -7,7 +7,7 @@ The previous body-part-oriented Phase 1 and repeating 12-week maintenance wave h
 | Day | Session | Purpose |
 | --- | --- | --- |
 | Monday | Full-body strength A | Squat/press/pull and controlled carries |
-| Tuesday | Easy aerobic development | Cycling and walking first, later optional run/walk or easy running |
+| Tuesday | Aerobic development | Cycling and walking first, later optional run/walk or easy running; one weekly quality run once running is continuous |
 | Wednesday | Full-body strength B | Hinge, single-leg strength, push and pull, carries |
 | Thursday | Aerobic, supervised swimming or mobility | Swimming with supervision when trained and available; otherwise bike or walking |
 | Friday | Full-body strength C | Relative strength, grip, carries, modest leg fatigue |
@@ -24,6 +24,22 @@ Strength targets generally sit around 2–3 reps in reserve, never a planned max
 - **Year 4: Sustain capability under varied demands.** Continue three strength exposures, non-maximal aerobic days, and progressive long hikes. Practice safe consistency, not forced mileage.
 - **Year 5: Retest, retain, serve.** Maintain strength, endurance, swim skills and hiking without unsustainable loads. Reassess at the end of each arc.
 
+## Weekly quality run
+
+From the first continuous-run cycle (Year 2, third arc) onward, Tuesday's run becomes the one quality session of the week; Thursday and Saturday stay easy (RPE 2–4). It is never prescribed in recovery weeks 4, 8 or 13, which revert to an easy run. Every quality session starts with 10 minutes of very easy jogging, keeps at least 5 easy minutes to finish, and always fits inside the planned duration.
+
+- First run arc: relaxed 20-second strides (4 → 6 across the arc), RPE 4–5.
+- Later arcs alternate weeks: short tempo (2 × 3 min rising slowly to 20 min continuous at RPE 5–6) and short intervals (1-minute, later 2-minute, brisk efforts at RPE 6–7 with 2 minutes easy between, at most 8 × 1 or 6 × 2).
+- Notes say to drop to easy running or walking for the rest of the session if anything hurts. The preflight asks for several tolerated easy runs, and choosing an alternative (run/walk, bike, incline walk) shows an easy RPE 2–4 target.
+
+`qualityRun()` in `readiness.ts` generates these; `isQualityRun()` (`lib/training/cardio.ts`) recognises one by a run target above RPE 4.
+
+## Recording carry and pack loads
+
+- Farmer's carry is a `dumbbell` exercise: the set-by-set logger shows an optional "Weight (each)" field beside the unchanged hold timer. The weight is stored in `workout_sets.weight` (reps stay null), prefilled from the last recorded carry, and never auto-increased.
+- Loaded hikes ask for an optional pack weight (kg, 0–40) on the rating screen, stored in `cardio_logs.pack_weight_kg` (migration `20261022000001_carry_and_pack_load.sql`, additive and nullable).
+- Progress has a Carrying card with the heaviest carry load per hand and the pack weight per loaded hike. Older logs without a load are simply not charted.
+
 ## Readiness gates (mandatory behavior)
 
 The calendar **never proves fitness readiness**. Every advanced training screen requires a personal preflight acknowledgement and offers low-impact alternatives:
@@ -33,7 +49,7 @@ The calendar **never proves fitness readiness**. Every advanced training screen 
 - Swimming: a supervised pool, qualified instruction as appropriate, and proper water safety. Never swim alone or practice underwater breath-holding. Otherwise use walking or cycling.
 - Loaded hike: multiple comfortable unloaded walks/hikes before pack weight; start with an empty or very light load (0–3 kg), increase conservatively, and favor familiar public routes. Never aim immediately at the suggested future load or long duration.
 
-The workout timer is not an appropriate swimming lap or GPS tracker. It tracks **session duration and RPE**, not distance, elevation, pack mass or stroke count. Physical benchmark records in Progress supplement these logs; only enter real observed results. Clinical and safety clearance may be needed where appropriate. Severe symptoms, pain, unsafe weather, or unsafe conditions mean stop or change the session.
+The workout timer is not an appropriate swimming lap or GPS tracker. It tracks **session duration, RPE and (for loaded hikes) optional pack weight**, not distance, elevation or stroke count. Physical benchmark records in Progress supplement these logs; only enter real observed results. Clinical and safety clearance may be needed where appropriate. Severe symptoms, pain, unsafe weather, or unsafe conditions mean stop or change the session.
 
 ## Architecture
 
@@ -48,11 +64,11 @@ The workout timer is not an appropriate swimming lap or GPS tracker. It tracks *
 ## Product limitations to resolve before wider release
 
 - This is structured, nonindividualized long-term programming. It has readiness prompts but no objective auto-promotion gate or coach-reviewed readiness signoff. Progressing by calendar cannot be used as evidence of readiness.
-- The cardio timer records minutes and perceived exertion, not pace/distance, pool laps or pack weight.
+- The cardio timer records minutes, perceived exertion and pack weight, not pace/distance or pool laps.
 - Swimming and hiking need live conditions, suitable facilities and qualified supervision when relevant.
 - Assessments and physical training are associated by cycle, but an assessment does not automatically generate a tailored future prescription.
-- Carry load and pack weight are not recorded, so carrying strength and loaded-hike progress are only visible through the Progress benchmarks.
-- Running stays at easy effort (RPE 2–4) for all five years; there is no tempo or interval work, so 5 km pace will improve slowly.
+- Carry and pack loads are self-reported and optional; there is no automatic load progression for either.
+- Quality running is capped at modest volumes (20 min tempo, 6 × 2 min) and has no pace targets.
 - There is no barbell back squat, conventional deadlift or overhead press; leg press, RDL and landmine press are the main lower-body and pressing lifts, which limits absolute strength.
 
 Deployed 2026-10-19: both migrations applied and all 20 blocks seeded to the hosted Supabase project (seed SQL now casts nullable columns; the original version failed on a real database).

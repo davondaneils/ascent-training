@@ -1,7 +1,8 @@
 // Prepares per-exercise UI info for the active workout from domain data. Pure; shared by the
 // workout page and the dev gallery.
 
-import { getNextPrescription, getPreviousExercisePerformance, previousSetsInOrder } from "@/lib/progression";
+import { getNextPrescription, getPreviousExercisePerformance, previousLoadedHold, previousSetsInOrder } from "@/lib/progression";
+import { isQualityRun } from "@/lib/training/cardio";
 import { formatMinutes, formatPrescription } from "@/lib/training/format";
 import type { ResolvedDay } from "@/lib/training/schedule";
 import type { WorkoutSession } from "@/lib/training/session";
@@ -40,7 +41,10 @@ export function buildExerciseInfos(
       perSide: shown.perSide,
       restSeconds: e.restSeconds,
       loadIncrement: shown.loadIncrement,
-      previous: previous ? previousSetsInOrder(previous) : null,
+      // A weighted timed carry: show (and prefill) the last load carried.
+      previous: shown.durationSeconds !== null && exercise.loadType !== "none" && exercise.loadType !== "bodyweight"
+        ? previousLoadedHold(history, e.prescriptionKey, e.exerciseSlug)
+        : previous ? previousSetsInOrder(previous) : null,
       recommendation: { kind: rec.kind, weight: rec.recommendedWeight, reason: rec.reason },
     };
   }
@@ -51,7 +55,7 @@ export function buildWorkoutMeta(resolved: ResolvedDay): WorkoutMeta {
   return {
     dayName: resolved.day.name,
     nextScheduled: resolved.cardio
-      ? `${resolved.cardio.modality.replace(/_/g, " ")} · ${formatMinutes(resolved.cardio.targetMinutes, resolved.cardio.targetMinutesMax)} easy`
+      ? `${resolved.cardio.modality.replace(/_/g, " ")} · ${formatMinutes(resolved.cardio.targetMinutes, resolved.cardio.targetMinutesMax)} ${isQualityRun(resolved.cardio) ? "quality" : "easy"}`
       : null,
   };
 }

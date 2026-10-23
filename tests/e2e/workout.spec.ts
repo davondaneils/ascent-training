@@ -72,6 +72,17 @@ test.describe("workout", () => {
     await expect(page.getByRole("heading", { name: "Farmer's Carry" })).toBeVisible();
     await expect(page.getByText(/20 sec/).first()).toBeVisible();
 
+    // The carry's load is optional and recorded per hand; the hold timer is unchanged.
+    await expect(page.getByRole("button", { name: "Start 20 sec" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Complete Set" })).toBeEnabled();
+    await page.getByLabel(/^Weight/).fill("30");
+    await page.getByRole("button", { name: "Complete Set" }).click();
+    await expect(page.getByText("Set 1 — 1 hold · 30 lb each")).toBeVisible();
+    await expect.poll(() => setCount(url)).toBe(4);
+    const carry = await adminClient().from("workout_sets").select("weight, reps, exercises!inner(slug)")
+      .eq("workout_id", url.split("/workout/")[1]).eq("exercises.slug", "farmer-carry");
+    expect(carry.data?.map((r) => [Number(r.weight), r.reps])).toEqual([[30, null]]);
+
     await page.getByRole("button", { name: "Overview" }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Finish workout" }).click();
     await page.getByRole("button", { name: "Finish", exact: true }).click();
@@ -83,6 +94,8 @@ test.describe("workout", () => {
       .toMatchObject({ status: "completed" });
     await page.goto("/today");
     await expect(page.getByText("Workout complete")).toBeVisible();
+    await page.goto("/progress");
+    await expect(page.getByText(/First load logged · latest 30 lb/)).toBeVisible();
   });
 
   test("next week recommends +5 lb; sets logged offline sync on reconnect", async ({ page, context }) => {

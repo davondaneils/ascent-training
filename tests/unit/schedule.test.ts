@@ -5,6 +5,7 @@ import {
   formatMinutes,
   formatPrescription,
   formatRest,
+  formatHolds,
   formatSet,
   formatSetsCompact,
   weightLabel,
@@ -319,5 +320,12 @@ describe("compact set lines", () => {
     expect(formatSetsCompact([s(0, 8), s(0, 7)], "assisted")).toBe("BW × 8 / 7");
     expect(formatSetsCompact([], "barbell")).toBe("");
     expect(weightLabel("assisted")).toBe("Assistance");
+  });
+
+  it("summarises timed holds, with the carried load when recorded", () => {
+    expect(formatHolds([{ weight: null }, { weight: null }], "none")).toBe("2 holds");
+    expect(formatHolds([{ weight: null }, { weight: null }], "dumbbell")).toBe("2 holds");
+    expect(formatHolds([{ weight: 35 }, { weight: 40 }], "dumbbell")).toBe("2 holds · 40 lb each");
+    expect(formatHolds([{ weight: 40 }], "dumbbell")).toBe("1 hold · 40 lb each");
   });
 });

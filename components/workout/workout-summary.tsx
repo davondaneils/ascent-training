@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { formatSetsCompact } from "@/lib/training/format";
+import { formatHolds, formatSetsCompact } from "@/lib/training/format";
 import type { SessionSummary } from "@/lib/training/session";
 import type { ExerciseInfo, WorkoutMeta } from "./types";
 
@@ -34,7 +34,7 @@ export function WorkoutSummary({ meta, summary, infoByExercise }: Props) {
             <li key={e.id} className="flex flex-col gap-0.5 px-4 py-3">
               <span className="text-[15px] text-text-primary">{info?.name ?? e.exerciseSlug}</span>
               <span className="text-[15px] tabular-nums text-text-secondary">
-                {info?.durationSeconds ? `${e.sets.length} × hold` : formatSetsCompact(e.sets, info?.loadType ?? "barbell")}
+                {info?.durationSeconds ? formatHolds(e.sets, info.loadType) : formatSetsCompact(e.sets, info?.loadType ?? "barbell")}
               </span>
             </li>
           );

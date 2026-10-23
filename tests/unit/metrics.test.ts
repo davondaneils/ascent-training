@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  carrySeries,
   consistency,
+  loadSummary,
+  packSeries,
   epley,
   longestSession,
   recentRpe,
@@ -152,5 +155,33 @@ describe("consistency", () => {
     const c = consistency({ block: PHASE_1, startDate: "2026-09-28", today: "2026-09-27", completedLiftingDates: [], cardioDates: [] });
     expect(c.lifting.scheduled).toBe(0);
     expect(c.blockPercent).toBe(0);
+  });
+});
+
+describe("carrying", () => {
+  const carry = (date: string, weights: (number | null)[]): ExercisePerformance => ({
+    workoutId: date, date, weekNumber: 1, isDeload: false, prescriptionKey: "readiness-x:1:carry", exerciseSlug: "farmer-carry",
+    sets: weights.map((weight, i) => ({ setNumber: i + 1, weight, reps: null })),
+  });
+
+  it("charts the heaviest carry load per day and skips carries without a load", () => {
+    const points = carrySeries([carry("2027-01-04", [30, 35]), carry("2027-01-01", [null, null]), carry("2027-02-01", [40, 40])]);
+    expect(points).toEqual([{ date: "2027-01-04", load: 35 }, { date: "2027-02-01", load: 40 }]);
+    expect(loadSummary(points, "lb")).toBe("35 → 40 lb over 4 weeks");
+  });
+
+  it("charts pack weight from loaded hikes only", () => {
+    const logs = [
+      { date: "2027-10-02", actualMinutes: 70, rpe: 3, modality: "loaded_hike" as const, packWeightKg: 3 },
+      { date: "2027-10-05", actualMinutes: 35, rpe: 3, modality: "run" as const, packWeightKg: null },
+      { date: "2027-10-09", actualMinutes: 75, rpe: 3, modality: "loaded_hike" as const, packWeightKg: null },
+      { date: "2027-10-16", actualMinutes: 80, rpe: 3, modality: "loaded_hike" as const, packWeightKg: 3 },
+      { date: "2027-10-01", actualMinutes: 30, rpe: 2 }, // older logs have neither field
+    ];
+    const points = packSeries(logs);
+    expect(points).toEqual([{ date: "2027-10-02", load: 3 }, { date: "2027-10-16", load: 3 }]);
+    expect(loadSummary(points, "kg")).toBe("Same load for 2 weeks");
+    expect(loadSummary(points.slice(0, 1), "kg")).toBe("First load logged");
+    expect(loadSummary([], "kg")).toBeNull();
   });
 });

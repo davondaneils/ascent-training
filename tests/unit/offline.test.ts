@@ -64,6 +64,23 @@ describe("outbox", () => {
     expect(q[0]).toMatchObject({ row: { rpe: 4 } });
   });
 
+  it("a loaded-hike log carries its pack weight through the queue and storage", async () => {
+    const storage = new MemoryStorage();
+    const sent: OutboxOp[] = [];
+    const op: OutboxOp = {
+      kind: "upsert_cardio",
+      row: {
+        id: "h1", user_id: "u", program_block_id: "b", week_number: 1, scheduled_date: "2027-10-02",
+        modality: "loaded_hike", target_minutes: 75, actual_minutes: 70, rpe: 3, pack_weight_kg: 4.5,
+        completed_at: "2027-10-02T12:00:00Z",
+      },
+    };
+    new Outbox(storage, "k", async () => "retry").enqueue(op);
+    const reloaded = new Outbox(storage, "k", async (o) => (sent.push(o), "ok"));
+    await reloaded.flush();
+    expect(sent[0]).toMatchObject({ row: { pack_weight_kg: 4.5 } });
+  });
+
   it("sends in order and empties storage when done", async () => {
     const storage = new MemoryStorage();
     const sent: string[] = [];

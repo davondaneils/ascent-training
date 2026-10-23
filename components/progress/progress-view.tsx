@@ -1,16 +1,20 @@
 import { Card, Eyebrow } from "@/components/shared/card";
 import { Progress } from "@/components/ui/progress";
 import { shortDate } from "@/lib/dates";
-import { RELATIVE_LIFTS, STRENGTH_LIFTS, type ProgressData } from "@/lib/data/progress";
+import { CARRY, RELATIVE_LIFTS, STRENGTH_LIFTS, type ProgressData } from "@/lib/data/progress";
 import {
+  carrySeries,
   consistency,
+  loadSummary,
   longestSession,
+  packSeries,
   recentRpe,
   repsSeries,
   repsSummary,
   strengthSeries,
   strengthSummary,
   weeklyAerobicMinutes,
+  type LoadPoint,
 } from "@/lib/training/metrics";
 import type { LocalDate, ProgramBlock } from "@/lib/training/types";
 import { ChipLinks } from "./chip-links";
@@ -37,6 +41,29 @@ const SHORT_NAMES: Record<string, string> = {
   "hack-squat": "Hack squat",
 };
 
+function LoadTrend({ title, unit, detail, points, empty }: {
+  title: string; unit: string; detail: string; points: LoadPoint[]; empty: string;
+}) {
+  const last = points[points.length - 1];
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-0.5">
+        <p className="type-subheading">{title}</p>
+        {last ? (
+          <p className="type-meta font-normal tabular-nums text-text-secondary">
+            {loadSummary(points, unit)} · latest {last.load} {unit} · {detail.toLowerCase()}
+          </p>
+        ) : (
+          <p className="type-meta font-normal text-text-tertiary">{empty}</p>
+        )}
+      </div>
+      {points.length > 1 && (
+        <LineTrend name={title} unit={unit} data={points.map((p) => ({ label: shortDate(p.date), value: p.load }))} />
+      )}
+    </div>
+  );
+}
+
 function Empty({ children }: { children: React.ReactNode }) {
   return <p className="py-8 text-center type-body text-text-tertiary">{children}</p>;
 }
@@ -55,6 +82,9 @@ export function ProgressView({ block, data, startDate, today, currentWeek, lift,
   const relSlugs: readonly string[] = RELATIVE_LIFTS[rel];
   const reps = repsSeries(working.filter((h) => relSlugs.includes(h.exerciseSlug)));
   const repsLine = repsSummary(reps);
+
+  const carry = carrySeries(working.filter((h) => h.exerciseSlug === CARRY));
+  const pack = packSeries(data.cardio);
 
   const weeks = currentWeek ? weeklyAerobicMinutes(data.cardio, block, startDate, currentWeek) : [];
   const thisWeek = weeks[weeks.length - 1]?.minutes ?? 0;
@@ -121,6 +151,25 @@ export function ProgressView({ block, data, startDate, today, currentWeek, lift,
             <LineTrend name="Best set" unit="reps" data={reps.map((p) => ({ label: shortDate(p.date), value: p.bestReps }))} />
           </>
         )}
+      </Card>
+
+      <Card className="flex flex-col gap-4">
+        <Eyebrow>Carrying</Eyebrow>
+        <LoadTrend
+          title="Farmer's carry"
+          unit="lb"
+          detail="Heaviest load per hand"
+          points={carry}
+          empty="Carry loads appear once you record a weight for a carry."
+        />
+        <div className="border-t border-border-subtle" />
+        <LoadTrend
+          title="Pack hike"
+          unit="kg"
+          detail="Pack weight on loaded hikes"
+          points={pack}
+          empty="Pack weights appear once you record one after a loaded hike."
+        />
       </Card>
 
       <Card className="flex flex-col gap-4">

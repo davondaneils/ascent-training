@@ -11,6 +11,7 @@ export { getAssistanceProgressionNextWeight } from "./assistance";
 export {
   getPreviousExercisePerformance,
   getProgressionSource,
+  previousLoadedHold,
   previousSetsInOrder,
 } from "./previous";
 

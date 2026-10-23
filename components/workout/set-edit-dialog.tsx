@@ -38,7 +38,7 @@ function EditBody({ set, info, onSave, onClose }: Props & { set: SessionSet }) {
         <DialogDescription>{info.name}</DialogDescription>
       </DialogHeader>
       <div className="flex flex-col gap-6 py-2">
-        {weighted && <WeightControl value={weight} onChange={setWeight} step={info.loadIncrement ?? 5} loadType={info.loadType} />}
+        {weighted && <WeightControl value={weight} onChange={setWeight} step={info.loadIncrement ?? 5} loadType={info.loadType} optional={timed} />}
         {!timed && info.repMin !== null && info.repMax !== null && (
           <RepsControl value={reps} onChange={setReps} repMin={info.repMin} repMax={info.repMax} perSide={info.perSide} />
         )}
@@ -48,7 +48,7 @@ function EditBody({ set, info, onSave, onClose }: Props & { set: SessionSet }) {
         <Button
           size="touch"
           className="flex-1"
-          disabled={(!timed && reps === null) || (weighted && weight === null)}
+          disabled={!timed && (reps === null || (weighted && weight === null))}
           onClick={() => {
             onSave(weight, reps);
             onClose();

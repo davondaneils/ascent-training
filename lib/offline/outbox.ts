@@ -25,6 +25,8 @@ export interface CardioRow {
   target_minutes: number;
   actual_minutes: number;
   rpe: number;
+  /** Loaded hikes only; omitted otherwise (and in ops queued before the column existed). */
+  pack_weight_kg?: number | null;
   completed_at: string;
 }
 

@@ -45,3 +45,17 @@ export function getProgressionSource(
 export function previousSetsInOrder(performance: ExercisePerformance): LoggedSet[] {
   return completedSets(performance.sets);
 }
+
+/**
+ * Timed carries log the load with reps null, so `completedSets` never sees them. The most recent
+ * carry exposure (same slot, else same exercise) that recorded a load, sets in order.
+ */
+export function previousLoadedHold(
+  history: ExercisePerformance[],
+  prescriptionKey: string,
+  exerciseSlug: string,
+): LoggedSet[] | null {
+  const usable = history.filter((h) => h.sets.some((s) => s.weight !== null && s.weight > 0)).sort(newestFirst);
+  const found = usable.find((h) => h.prescriptionKey === prescriptionKey) ?? usable.find((h) => h.exerciseSlug === exerciseSlug);
+  return found ? [...found.sets].sort((a, b) => a.setNumber - b.setNumber) : null;
+}
